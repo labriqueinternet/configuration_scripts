@@ -195,6 +195,9 @@ EOF
     yunohost app setting vpnclient login_passphrase -v "$vpn_pwd"
     
     yunohost app setting vpnclient ip6_net -v "$ip6_net"
+
+    # Add the service to YunoHost's monitored services
+    yunohost service add ynh-vpnclient -l /var/log/openvpn-client.log
     
     echo "Restarting OpenVPN..."
     systemctl restart ynh-vpnclient \
@@ -225,6 +228,9 @@ configure_hostpot() {
     yunohost app setting hotspot ip6_net -v "$ip6_net"
     yunohost app setting hotspot ip6_addr -v "${ip6_net}42"
 
+    # Add the service to YunoHost's monitored services
+    yunohost service add ynh-hotspot -l /var/log/syslog
+
     echo "Restarting the hotspot..."
     systemctl restart ynh-hotspot
 }
@@ -233,6 +239,16 @@ configure_hostpot() {
 # ----------------------------------
 # Optional steps
 # ----------------------------------
+
+fix_yunohost_services() {
+    # Add/remove some services to comply to the Cube's services
+    yunohost service add dnsmasq -l /var/log/syslog \
+      || echo "dnsmasq already listed in services"
+    yunohost service add nslcd -l /var/log/syslog \
+      || echo "nslcd already listed in services"
+
+    yunohost service remove bind9 || echo "Bind9 already removed"
+}
 
 remove_dyndns_cron() {
     yunohost dyndns update > /dev/null 2>&1 \
@@ -315,6 +331,7 @@ configure_vpnclient
 install_hotspot
 configure_hostpot
 
+fix_yunohost_services
 remove_dyndns_cron
 add_vpn_restart_cron
 configure_DKIM
