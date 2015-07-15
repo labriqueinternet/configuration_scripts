@@ -246,6 +246,8 @@ fix_yunohost_services() {
       || echo "dnsmasq already listed in services"
     yunohost service add nslcd -l /var/log/syslog \
       || echo "nslcd already listed in services"
+    yunohost service add spamassassin -l /var/log/mail.log \
+      || echo "spamassassin already listed in services"
 
     yunohost service remove bind9 || echo "Bind9 already removed"
 }
