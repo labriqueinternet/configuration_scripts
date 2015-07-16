@@ -12,8 +12,6 @@ RED='\033[0;31m'
 
 wget http://www.rezine.org/files/header-install-propolis.txt -q -O -
 
-#cat <<EOF
-
 echo -e "${LGREEN}
   _____________________________________________________________________________________________${NC}
 
@@ -237,8 +235,6 @@ configure_vpnclient() {
     yunohost app setting vpnclient login_user -v "$vpn_username"
     yunohost app setting vpnclient login_passphrase -v "$vpn_pwd"
     
-#    yunohost app setting vpnclient ip6_net -v "$ip6_net"
-
     # Add the service to YunoHost's monitored services
     yunohost service add ynh-vpnclient -l /var/log/openvpn-client.log
     
@@ -282,8 +278,6 @@ configure_hostpot() {
 
     # Ensure that the hotspot is activated and that the IPv6 prefix is set
     ${cmd_conf} service_enabled -v "1"
-#    ${cmd_conf} ip6_net -v "$ip6_net"
-#    ${cmd_conf} ip6_addr -v "${ip6_net}42"
 
     # Adding hotspots for TorClient and PirateBox
     if [ "$install_tor" = "oui" ]; then
