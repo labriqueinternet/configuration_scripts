@@ -38,7 +38,7 @@ get_variables() {
         source rezine.variables
     else
 	echo
-	echo -e "${LGREEN}Choisissez un nom pour votre Propolis (nom avec laquelle elle apparaîtra sur le réseau)${NC}"
+	echo -e "${LGREEN}Choisissez un nom pour votre Propolis (nom avec laquelle elle apparaîtra sur le réseau, sans majuscules ni espaces)${NC}"
 	read proponame
         echo
         echo -e "${LGREEN}Domaine principal (sera utilisé pour héberger vos emails et autres services)\n${GRAY}i.e.: example.org${NC}"
@@ -65,7 +65,7 @@ get_variables() {
         echo -e "${LGREEN}Mot de passe de votre tunnel chiffré Rézine\n${GRAY}Il est accessible depuis votre espace à cette adresse : https://ambre.rezine.org/vpn_services/ en cliquant sur 'Détails techniques'\n[ATTENTION !] Bien vérifier de n'avoir aucun espace avant ou après le mot de passe !${NC}"
         read vpn_pwd
         echo
-        echo -e "${LGREEN}Nom du SSID de votre hotspot Wifi (qui sera actif à la fin de cette configuration)\n${GRAY}i.e.: RezineReseauNeutre${NC}"
+        echo -e "${LGREEN}Nom du SSID de votre hotspot Wifi (le nom du réseau Wifi qui sera actif à la fin de cette configuration)\n${GRAY}i.e.: RezineReseauNeutre${NC}"
         read wifi_ssid
         echo
         echo -e "${LGREEN}Installer DKIM ? (recommandé si vous voulez un serveur email parfait, sinon, pas nécessaire)\n${GRAY}(oui/non)${NC}"
@@ -122,7 +122,7 @@ modify_hosts() {
     echo -e " ========================= ${NC}\n"
 
     grep -q "olinux" /etc/hosts \
-      || echo "127.0.0.1 $domain $additional_domain olinux" >> /etc/hosts
+      || echo "127.0.0.1 $domain $additional_domain $proponame" >> /etc/hosts
     echo -e "${LBLUE}\e[1m   ----> Fait ! \e[21m${NC}"
 }
 
