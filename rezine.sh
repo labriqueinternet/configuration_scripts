@@ -17,6 +17,10 @@ echo -e "${LGREEN}
 
                   Vous êtes sur le point de configurer une Propolis de Rézine
 
+(Propolis : matériau recueilli par les abeilles à partir de certains végétaux. Cette résine végétale est
+utilisée par les abeilles comme mortier et anti-infectieux pour assainir la ruche.
+
+
   * Tous les mots de passe seront : ${RED}\e[4m${dummy_pwd}${NC}\e[24m (à changer après l'execution de ce script)
 
   * Ce script a besoin d'être executé en temps que root ${RED}\e[4mSUR${NC}\e[24m la brique à partir d'une image 
@@ -27,7 +31,7 @@ echo -e "${LGREEN}
   _____________________________________________________________________________________________
 \n\n${LBLUE}"
 
-read -rsp $'Pressez n\'importe quelle touche pour commencer la configuration...\n' -n1 yolo
+read -rsp $'La configuration va commencer. À tout moment, si vous avez fait une erreur dans les questions, vous pouvez arreter avec Ctrl+C pour arrêter le script puis recommencer la procédure. Pressez n\'importe quelle touche pour commencer la configuration...\n' -n1 yolo
 
 # Exit if any of the following command fails
 set -e
@@ -37,62 +41,121 @@ get_variables() {
     if [ -f rezine.variables ]; then
         source rezine.variables
     else
+	echo -e "${NC}Veuillez rentrer les valeurs qui vous sont demandées. Pour les valeurs optionnelles, vous pouvez taper sur entrée pour passer à la configuration suivante"
 	echo
-	echo -e "${LGREEN}Choisissez un nom pour votre Propolis (nom avec laquelle elle apparaîtra sur le réseau, sans majuscules ni espaces)${NC}"
+	echo -e "${RED}[Optionnel] ${LGREEN}Choisissez un nom pour votre Propolis (nom avec laquelle elle apparaîtra sur le réseau, sans majuscules ni espaces)${NC}"
 	read proponame
+	   if [ -z "${proponame}" ]; then
+	       proponame="propolis"
+	   fi
         echo
-        echo -e "${LGREEN}Domaine principal (sera utilisé pour héberger vos emails et autres services)\n${GRAY}i.e.: example.org${NC}"
+        echo -e "${RED}[Obligatoire] ${LGREEN}Domaine principal (sera utilisé pour héberger vos emails et autres services)\n${GRAY}ex: example.org${NC}"
         read domain
         echo
-        echo -e "${LGREEN}Domaine additionnel (par exemple, si vous voulez un domaine différent du précédent pour vos emails)\n${GRAY}i.e.: example2.org (ou laisser vide)${NC}"
+        echo -e "${RED}[Optionnel] ${LGREEN}Domaine additionnel (par exemple, si vous voulez un domaine différent du précédent pour vos emails)\n${GRAY}ex: example2.org${NC}"
         read additional_domain
         echo
-        echo -e "${LGREEN}Nom d'utilisateur (utilisé pour se connecter à l'interface et acceder à vos applications. Doit être composé de minuscules et de chiffres seulement)\n${GRAY}i.e.: jonsnow${NC}"
+        echo -e "${RED}[Obligatoire] ${LGREEN}Nom d'utilisateur (utilisé pour se connecter à l'interface et acceder à vos applications (doit être composé de minuscules et de chiffres seulement)\n${GRAY}ex: jonsnow${NC}"
         read username
         echo
-        echo -e "${LGREEN}Prénom (obligatoire, utilisé pour l'envoi des mails)\n${GRAY}i.e.: Jon${NC}"
+        echo -e "${RED}[Obligatoire] ${LGREEN}Prénom (utilisé pour l'envoi des mails)\n${GRAY}ex: Jon${NC}"
         read firstname
         echo
-        echo -e "${LGREEN}Nom (obligatoire, utilisé pour l'envoi des mails)\n${GRAY}i.e. Snow${NC}"
+        echo -e "${RED}[Obligatoire] ${LGREEN}Nom (utilisé pour l'envoi des mails)\n${GRAY}ex: Snow${NC}"
         read lastname
         echo
-        echo -e "${LGREEN}Email (doit contenir un des domaines précédemments configurés)\n${GRAY}i.e. jon@example.com${NC}"
+        echo -e "${RED}[Optionnel] ${LGREEN}Email (doit contenir un des domaines précédemments configurés)\n${GRAY}Defaut: ${username}@${domain}${NC}"
         read email
+           if [ -z "${email}" ]; then
+               email="${username}@${domain}"
+           fi
         echo
-        echo -e "${LGREEN}Login de votre tunnel chiffré Rézine\n${GRAY}Il est accessible depuis votre espace à cette adresse : https://ambre.rezine.org/vpn_services/ en cliquant sur 'Détails techniques'${NC}"
+        echo -e "${RED}[Obligatoire] ${LGREEN}Login de votre tunnel chiffré Rézine\n${GRAY}Il est accessible depuis votre espace à cette adresse : https://ambre.rezine.org/vpn_services/ en cliquant sur 'Détails techniques'${NC}"
         read vpn_username
         echo
-        echo -e "${LGREEN}Mot de passe de votre tunnel chiffré Rézine\n${GRAY}Il est accessible depuis votre espace à cette adresse : https://ambre.rezine.org/vpn_services/ en cliquant sur 'Détails techniques'\n[ATTENTION !] Bien vérifier de n'avoir aucun espace avant ou après le mot de passe !${NC}"
+        echo -e "${RED}[Obligatoire] ${LGREEN}Mot de passe de votre tunnel chiffré Rézine\n${GRAY}Il est accessible depuis votre espace à cette adresse : https://ambre.rezine.org/vpn_services/ en cliquant sur 'Détails techniques'\n[ATTENTION !] Bien vérifier de n'avoir aucun espace avant ou après le mot de passe !${NC}"
         read vpn_pwd
         echo
-        echo -e "${LGREEN}Nom du SSID de votre hotspot Wifi (le nom du réseau Wifi qui sera actif à la fin de cette configuration)\n${GRAY}i.e.: RezineReseauNeutre${NC}"
+        echo -e "${RED}[Optionnel] ${LGREEN}Nom du SSID de votre hotspot Wifi (le nom du réseau Wifi qui sera actif à la fin de cette configuration)\n${GRAY}Defaut: RezineReseauNeutre${NC}"
         read wifi_ssid
+           if [ -z "${wifi_ssid}" ]; then
+               wifi_ssid="RezineReseauNeutre"
+           fi
         echo
-        echo -e "${LGREEN}Installer DKIM ? (recommandé si vous voulez un serveur email parfait, sinon, pas nécessaire)\n${GRAY}(oui/non)${NC}"
+        echo -e "${RED}[Optionnel] ${LGREEN}Installer DKIM ? (recommandé si vous voulez un serveur email parfait)\n${GRAY}(oui/non)${NC}"
         read install_dkim
         echo
-        echo -e "${LGREEN}Installer l'appli TorClient ?\n${GRAY}(oui/non)${NC}"
-        read install_tor
+	echo -e "${LGREEN}Voulez-vous installer la ou les applications supplémentaires : TorClient / PirateBox ?\n${GRAY}(oui/non)${NC}"
+	read install_apps
 	echo
-	if [ "$install_tor" = "oui" ]; then
-	   echo -e "${LGREEN}Nom du SSID de votre hotspot pour Tor\n${GRAY}i.e.: MonReseauTor${NC}"
-           read tor_ssid
-           echo
+	if [ "$install_apps" = "oui" ]; then
+	   if dmesg | grep "idVendor=13d3" | grep "idProduct=3327" >/dev/null; then
+              wifi_atheros="yes"
+	   fi
+	   if dmesg | grep "idVendor=148f" | grep "idProduct=5370" >/dev/null; then
+	      wifi_realtek="yes"
+	   fi
+	   if [ -n "${wifi_atheros}" ]; then
+	      echo -e "${RED}[ATTENTION !] Votre antenne Wifi ne vous permettra pas de créer plus que 2 hotspots. De ce fait, vous ne pourrez installer qu'une seule des deux applications supplémentaires. Ce sera donc entrée OU dessert !\n${LGREEN}Veuillez choisir l'application à installer en tapant «pirate» ou «tor»${NC}"
+	      read app_atheros
+	      if [ "${app_atheros}" = "tor" ]; then
+	         install_tor="oui" install_pirate="non" pirate_ssid="" pirate_name="" pirate_dns=""
+	      fi
+	      if [ "${app_atheros}" = "pirate" ]; then
+	         install_pirate="oui" install_tor="non" tor_ssid=""
+	      fi
+	      echo
+	   fi
+	   if [ -z "${wifi_realtek}" -a -z "${wifi_atheros}" ]; then
+	      echo -e "${RED}[ATTENTION !] Votre antenne Wifi ne fait pas partie des antennes préconisées pour la Brique Internet. Pour éviter tout problème lié au nombre de points d'accès réalisables par votre antenne, il est préférable que vous installiez vous-même ces deux applications dans l'interface d'administration après cette phase de configuration."
+	      wifi_unknown="yes"
+	      install_tor="non" install_pirate="non"
+	   fi
+           if [ -n "${wifi_realtek}" ]; then
+	      echo -e "${RED}[Optionnel] ${LGREEN}Installer l'appli TorClient ?\n${GRAY}(oui/non)${NC}"
+              read install_tor
+	      echo
+	   fi
+	   if [ "${install_tor}" = "oui" ]; then
+	      echo -e "${RED}[Optionnel] ${LGREEN}Nom du SSID de votre hotspot pour Tor\n${GRAY}Defaut: MonReseauTor${NC}"
+              read tor_ssid
+                 if [ -z "${tor_ssid}" ]; then
+                     tor_ssid="MonReseauTor"
+                 fi
+              echo
+	   else
+	      tor_ssid=""
+	   fi
+	   if [ -n "${wifi_realtek}" ]; then
+              echo -e "${RED}[Optionnel] ${LGREEN}Installer l'appli PirateBox ?\n${GRAY}(oui/non)${NC}"
+              read install_pirate
+	      echo
+	   fi
+	   if [ "${install_pirate}" = "oui" ]; then            
+              echo -e "${RED}[Optionnel] ${LGREEN}Nom du SSID de votre hotspot pour la PirateBox\n${GRAY}Defaut: ShareBox${NC}"
+              read pirate_ssid
+                 if [ -z "${pirate_ssid}" ]; then
+                     pirate_ssid="ShareBox"
+                 fi
+              echo
+	      echo -e "${RED}[Optionnel] ${LGREEN}Choisir un nom pour la PirateBox\n${GRAY}Defaut: PirateBox${NC}"
+	      read pirate_name 
+                 if [ -z "${pirate_name}" ]; then
+                     pirate_name="PirateBox"
+                 fi
+	      echo
+	      echo -e "${RED}[Optionnel] ${LGREEN}Choisissez un "faux domaine" pour ${pirate_name}\n${GRAY}Defaut: share.box${NC}"
+	      read pirate_dns
+                 if [ -z "${pirate_dns}" ]; then
+                     pirate_dns="share.box"
+                 fi
+	      echo
+	   else
+	      pirate_ssid="" pirate_name="" pirate_dns=""
+           fi
+	else
+	   install_tor="non" tor_ssid="" install_pirate="non" pirate_ssid="" pirate_name="" pirate_dns=""
 	fi
-        echo -e "${LGREEN}Installer l'appli PirateBox ?\n${GRAY}(oui/non)${NC}"
-        read install_pirate
-        echo
-	if [ "$install_pirate" = "oui" ]; then            
-           echo -e "${LGREEN}Nom du SSID de votre hotspot pour la PirateBox\n${GRAY}i.e.: ShareBox${NC}"
-           read pirate_ssid
-           echo
-	   echo -e "${LGREEN}Choisir un nom pour la PirateBox\n${GRAY}i.e.: PirateBox${NC}"
-	   read pirate_name 
-	   echo
-	   echo -e "${LGREEN}Choisissez un "faux domaine" pour ${pirate_name}\n${GRAY}i.e.: share.box${NC}"
-	   read pirate_dns
-	   echo
-        fi
         echo -e "\n${LGREEN}L'installation va commencer… merci de bien vérifier une dernière fois les paramètres ci-dessus.${BLUE}"
         read -rsp $'Pressez n\'importe quelle touche pour continuer...\n' -n1 yolo
         echo -e "${NC}\n"
@@ -109,6 +172,7 @@ modify_hostname() {
     echo -e " ============================= "
     echo -e " Modification du nom réseau..."
     echo -e " ============================= ${NC}\n"
+
 
     echo "$proponame" > /etc/hostname
     echo -e "${LBLUE}\e[1m   ----> Fait ! \e[21m${NC}"
@@ -142,9 +206,13 @@ postinstall_yunohost() {
     echo -e " ================================================ "
     echo -e " Lancement de la post-installation de YunoHost..."
     echo -e " ================================================ ${NC}\n"
-
-    yunohost tools postinstall -d $domain -p $dummy_pwd
-    echo -e "${LBLUE}\e[1m   ----> Fait ! \e[21m${NC}"
+    if [ -f /etc/yunohost/installed ]; then
+        echo -e "${LGREEN}"
+        echo -e " ## La post-installation a déjà eu lieu, passage à la suite... ##\n"
+    else
+        yunohost tools postinstall -d $domain -p $dummy_pwd
+        echo -e "${LBLUE}\e[1m   ----> Fait ! \e[21m${NC}"
+    fi
 }
 
 add_additional_domain() {
@@ -185,10 +253,15 @@ create_yunohost_user() {
     echo -e " =========================================== "
     echo -e " Création du premier utilisateur YunoHost..."
     echo -e " =========================================== ${NC}\n"
-
-    yunohost user create $username -f $firstname -l $lastname -m $email \
-      -q 0 -p $dummy_pwd
-    echo -e "${LBLUE}\e[1m   ----> Fait ! \e[21m${NC}"
+    
+    if [ -n "$(yunohost user list | grep username)" ]; then
+        echo -e "${LGREEN}"
+        echo -e " ## Il y a déjà un utilisateur principal, passage à la suite... ##\n"
+    else
+        yunohost user create $username -f $firstname -l $lastname -m $email \
+          -q 0 -p $dummy_pwd
+        echo -e "${LBLUE}\e[1m   ----> Fait ! \e[21m${NC}"
+    fi
 }
 
 install_vpnclient() {
@@ -197,9 +270,14 @@ install_vpnclient() {
     echo -e " Installation du client VPN (tunnel chiffré de Rézine)..."
     echo -e " ======================================================== ${NC}\n"
 
-    yunohost app install https://github.com/labriqueinternet/vpnclient_ynh \
-      --args "domain=$domain&path=/vpnadmin&server_name=tun.rezine.org"
-    echo -e "${LBLUE}\e[1m   ----> Fait ! \e[21m${NC}"
+    if [ -n "$(yunohost app info vpnclient)" ]; then
+        echo -e "${LGREEN}"
+        echo -e " ## L'application vpnclient est déjà installée, passage à la suite... ##\n"
+    else
+        yunohost app install https://github.com/labriqueinternet/vpnclient_ynh \
+          --args "domain=$domain&path=/vpnadmin&server_name=tun.rezine.org"
+        echo -e "${LBLUE}\e[1m   ----> Fait ! \e[21m${NC}"
+    fi
 }
 
 
@@ -218,6 +296,7 @@ configure_vpnclient() {
     # Copy certificates and keys
     mkdir -p /etc/openvpn/keys
     wget -O /etc/openvpn/keys/ca-server.crt http://www.rezine.org/files/tunnel.rezine.org.pem
+    chown admin:admins /etc/openvpn/keys/ca-server.crt && chmod 644 /etc/openvpn/keys/ca-server.crt
 
     # And credentials
     echo -e "$vpn_username\n$vpn_pwd" > /etc/openvpn/keys/credentials
@@ -255,10 +334,14 @@ install_hotspot() {
     echo -e " Installation de l'application Hotspot..."
     echo -e " ======================================== ${NC}\n"
 
-
-    yunohost app install https://github.com/labriqueinternet/hotspot_ynh \
-      --args "domain=${domain}&path=/wifiadmin&wifi_ssid=${wifi_ssid}&wifi_passphrase=${dummy_pwd}&firmware_nonfree=yes"
-    echo -e "${LBLUE}\e[1m   ----> Fait ! \e[21m${NC}"
+   if [ -n "$(yunohost app info hotspot)" ]; then
+        echo -e "${LGREEN}"
+        echo -e " ## L'application hotspot est déjà installée, passage à la suite... ##\n"
+    else
+        yunohost app install https://github.com/labriqueinternet/hotspot_ynh \
+          --args "domain=${domain}&path=/wifiadmin&wifi_ssid=${wifi_ssid}&wifi_passphrase=${dummy_pwd}&firmware_nonfree=yes"
+        echo -e "${LBLUE}\e[1m   ----> Fait ! \e[21m${NC}"
+    fi
 }
 
 
@@ -326,11 +409,14 @@ if [ "$install_tor" = "oui" ]; then
     echo -e " Installation de TorClient..."
     echo -e " ============================ ${NC}\n"
 
-    yunohost app install https://github.com/labriqueinternet/torclient_ynh \
-      --args "domain=$domain&path=/torclientadmin"
-
-    echo -e "${LBLUE}\e[1m   ----> Fait ! \e[21m${NC}"
-
+    if [ -n "$(yunohost app info torclient)" ]; then
+        echo -e "${LGREEN}"
+        echo -e " ## L'application torclient est déjà installée, passage à la suite... ##\n"
+    else
+        yunohost app install https://github.com/labriqueinternet/torclient_ynh \
+          --args "domain=$domain&path=/torclientadmin"
+        echo -e "${LBLUE}\e[1m   ----> Fait ! \e[21m${NC}"
+    fi
 fi
 }
 
@@ -366,10 +452,14 @@ if [ "$install_pirate" = "oui" ]; then
     echo -e " Installation de PirateBox..."
     echo -e " ============================ ${NC}\n"
 
-    yunohost app install https://github.com/labriqueinternet/piratebox_ynh \
-      --args "domain=${domain}&path=/piratebox&opt_chat=yes&opt_deleting=yes&opt_renaming=yes&opt_domain=${pirate_dns}&opt_name=${pirate_name}"
-
-    echo -e "${LBLUE}\e[1m   ----> Fait ! \e[21m${NC}"
+    if [ -n "$(yunohost app info piratebox)" ]; then
+        echo -e "${LGREEN}"
+        echo -e " ## L'application piratebox est déjà installée, passage à la suite... ##\n"
+    else
+        yunohost app install https://github.com/labriqueinternet/piratebox_ynh \
+          --args "domain=${domain}&path=/piratebox&opt_chat=yes&opt_deleting=yes&opt_renaming=yes&opt_domain=${pirate_dns}&opt_name=${pirate_name}"
+        echo -e "${LBLUE}\e[1m   ----> Fait ! \e[21m${NC}"
+    fi
 fi
 }
 
