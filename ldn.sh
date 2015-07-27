@@ -94,7 +94,7 @@ upgrade_system() {
     echo "Upgrading Debian packages..."
 
     apt-get update -qq
-    apt-get dist-upgrade -y
+    apt-get dist-upgrade -y --force-yes
 }
 
 postinstall_yunohost() {
