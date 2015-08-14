@@ -45,13 +45,13 @@ get_variables() {
         echo "i.e. jon@example.com"
         read email
         echo
-        echo "VPN client certificate (paste all the lines below and end with a blank line): "
+        echo "VPN client certificate (paste all the content of client.crt below and end with a blank line): "
         vpn_client_crt=$(sed '/^$/q' | sed 's/-----BEGIN CERTIFICATE-----//' | sed 's/-----END CERTIFICATE-----//' | sed '/^$/d')
         echo
-        echo "VPN client key (paste all the lines below and end with a blank line): "
+        echo "VPN client key (paste all the content of client.key below and end with a blank line): "
         vpn_client_key=$(sed '/^$/q' | sed 's/-----BEGIN PRIVATE KEY-----//' | sed 's/-----END PRIVATE KEY-----//' | sed '/^$/d')
         echo
-        echo "CA server certificate (paste all the lines below and end with a blank line): "
+        echo "CA server certificate (paste all the content of ca.crt below and end with a blank line): "
         vpn_ca_crt=$(sed '/^$/q' | sed 's/-----BEGIN CERTIFICATE-----//' | sed 's/-----END CERTIFICATE-----//' | sed '/^$/d')
         echo
         echo "VPN username: "
