@@ -185,14 +185,12 @@ configure_vpnclient() {
     sleep 5
 }
 
-
 install_hotspot() {
     echo "Installing the Hotspot application..."
 
     yunohost app install https://github.com/labriqueinternet/hotspot_ynh \
       --args "domain=$domain&path=/wifiadmin&wifi_ssid=$wifi_ssid&wifi_passphrase=$dummy_pwd&firmware_nonfree=yes"
 }
-
 
 configure_hostpot() {
     echo "Configuring the hotspot..."
@@ -215,6 +213,30 @@ configure_hostpot() {
     systemctl restart ynh-hotspot
 }
 
+install_piratebox() {
+    echo "Installing the PirateBox application..."
+
+    yunohost app install https://github.com/labriqueinternet/piratebox_ynh \
+      --args "domain=$domain&path=/piratebox&opt_domain=pirate.box&opt_name=PirateBox&opt_renaming=yes&opt_deleting=yes&opt_chat=yes"
+}
+
+configure_piratebox() {
+    echo "Configuring the piratebox..."
+
+    # Restrict user access to the app
+    yunohost app addaccess piratebox -u $username
+
+    # Add a piratebox wifi ssid and use it in piratebox app
+    yunohost app setting hotspot wifi_ssid -v "piratebox"
+    yunohost app setting piratebox wifi_ssid -v "piratebox"
+    yunohost app setting piratebox service_enabled -v "1"
+
+    # Add the service to YunoHost's monitored services
+    yunohost service add ynh-piratebox -l /var/log/syslog
+
+    echo "Restarting the hotspot..."
+    systemctl restart ynh-piratebox
+}
 
 # ----------------------------------
 # Optional steps
