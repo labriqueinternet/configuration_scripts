@@ -143,13 +143,12 @@ install_vpnclient() {
       --args "domain=$domain&path=/vpnadmin&server_name=access.ldn-fai.net"
 }
 
-
 configure_vpnclient() {
     echo "Configuring the VPN connection..."
 
     # Restrict user access to the app
     yunohost app addaccess vpnclient -u $username
-    
+
     # Copy certificates and keys
     mkdir -p /etc/openvpn/keys
     echo '-----BEGIN CERTIFICATE-----'             > /etc/openvpn/keys/user.crt
@@ -173,13 +172,13 @@ configure_vpnclient() {
     yunohost app setting vpnclient server_port -v "1194"
     yunohost app setting vpnclient server_proto -v "udp"
     yunohost app setting vpnclient service_enabled -v "1"
-    
+
     yunohost app setting vpnclient ip6_net -v "$ip6_net"
     yunohost app setting vpnclient ip6_addr -v "${ip6_net}42"
 
     # Add the service to YunoHost's monitored services
     yunohost service add ynh-vpnclient -l /var/log/openvpn-client.log
-    
+
     echo "Restarting OpenVPN..."
     systemctl restart ynh-vpnclient \
       || (echo "Logs:" && cat /var/log/openvpn-client.log && exit 1)
