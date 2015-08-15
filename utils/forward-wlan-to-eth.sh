@@ -77,7 +77,7 @@ elif [ "$action" = "stop" ]; then
   ip a d 172.16.42.1/24 dev "${eth}"
 
   echo "stop dnsmasq"
-  echp "and maybe restart your firewall :-)"
+  echo "and maybe restart your firewall :-)"
 
 else
   show_usage
