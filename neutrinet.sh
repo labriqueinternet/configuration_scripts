@@ -288,7 +288,9 @@ VICTOIRE !
 Your Cube has been configured properly. Please set your DNS records as below:
 
 @ 14400 IN A $ip4
+* 14400 IN A $ip4
 @ 14400 IN AAAA $ip6
+* 14400 IN AAAA $ip6
 _xmpp-client._tcp 14400 IN SRV 0 5 5222 $domain.
 _xmpp-server._tcp 14400 IN SRV 0 5 5269 $domain.
 
