@@ -138,7 +138,7 @@ EOF
 create_yunohost_user() {
     echo "Creating the first YunoHost user..."
 
-    yunohost user create $username -f $firstname -l $lastname -m $email \
+    yunohost user create $username -f "$firstname" -l "$lastname" -m $email \
       -q 0 -p $dummy_pwd
 }
 
