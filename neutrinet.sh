@@ -7,7 +7,7 @@ cat <<EOF
 You are about to configure an Internet Cube for Neutrinet.
 All the passwords will be: '$dummy_pwd' (to change after this script's execution)
 
-/!\\ This script has to be run as root *on* the Cube itself, on a labriqueinternet_04-06-2015_jessie.img SD card
+/!\\ This script has to be run as root *on* the Cube itself, on a labriqueinternet_A20LIME_2015-11-09.img SD card (or newer)
 /!\\ If you run into trouble, please refer to the original documentation page: https://yunohost.org/installation_brique_fr
 
 EOF
@@ -24,10 +24,6 @@ get_variables() {
         echo "Main domain name (will be used to host your email and services)"
         echo "i.e.: example.com"
         read domain
-        echo
-        echo "Additional domain name (for example if you want to have a different email domain than the previous one)"
-        echo "i.e.: example2.com (or leave blank)"
-        read additional_domain
         echo
         echo "Username (used to connect to the user interface and access your apps, must be composed of lowercase letters and numbers only)"
         echo "i.e.: jonsnow"
@@ -68,17 +64,13 @@ get_variables() {
         echo "i.e.: MyWunderbarNeutralNetwork"
         read wifi_ssid
         echo
-        echo "Install DKIM? (recommended if you want a perfect email server, not needed otherwise)"
-        echo "(Yes/No)"
-        read install_dkim
-        echo
         echo
         echo "The installation will proceed, please verify the parameters above one last time."
         read -rsp $'Press any key to continue...\n' -n1 yolo
         echo
 
         # Store all the variables into a file
-        for var in domain additional_domain username firstname lastname email vpn_username vpn_pwd ip6_net wifi_ssid install_dkim; do
+        for var in domain username firstname lastname email vpn_username vpn_pwd ip6_net wifi_ssid; do
             declare -p $var | cut -d ' ' -f 3- >> neutrinet.variables
         done
 
@@ -93,11 +85,13 @@ modify_hosts() {
     echo "Modifying hosts..."
 
     grep -q "olinux" /etc/hosts \
-      || echo "127.0.0.1 $domain $additional_domain olinux" >> /etc/hosts
+      || echo "127.0.0.1 $domain olinux" >> /etc/hosts
 }
 
 upgrade_system() {
     echo "Upgrading Debian packages..."
+
+    sed -i 's/testing//g' /etc/apt/sources.list.d/yunohost.list
 
     apt-get update -qq
     apt-get dist-upgrade -y
@@ -107,32 +101,6 @@ postinstall_yunohost() {
     echo "Launching YunoHost post-installation..."
 
     yunohost tools postinstall -d $domain -p $dummy_pwd
-}
-
-add_additional_domain() {
-    # Often we want to add a domain that is not the main domain
-    if [ ! -z "$additional_domain" ]; then
-        echo "Adding the domain $additional_domain ..."
-
-        yunohost domain add $additional_domain
-    fi
-}
-
-fix_userdir_creation() {
-    echo "Adding a script to properly create user directories..."
-
-    # Temporary FIX to create users directories properly
-    mkdir -p /usr/share/yunohost/hooks/post_user_create
-    cat > /usr/share/yunohost/hooks/post_user_create/06-create_userdir <<EOF
-#!/bin/bash
-user=\$1
-sudo mkdir -p /var/mail/\$user
-sudo chown -hR vmail:mail /var/mail/\$user
-/sbin/mkhomedir_helper \$user
-EOF
-
-    # Wait 2 seconds in order to let YunoHost give this script a fuck
-    sleep 2
 }
 
 create_yunohost_user() {
@@ -240,18 +208,6 @@ configure_hostpot() {
 # Optional steps
 # ----------------------------------
 
-fix_yunohost_services() {
-    # Add/remove some services to comply to the Cube's services
-    yunohost service add dnsmasq -l /var/log/syslog \
-      || echo "dnsmasq already listed in services"
-    yunohost service add nslcd -l /var/log/syslog \
-      || echo "nslcd already listed in services"
-    yunohost service add spamassassin -l /var/log/mail.log \
-      || echo "spamassassin already listed in services"
-
-    yunohost service remove bind9 || echo "Bind9 already removed"
-}
-
 remove_dyndns_cron() {
     yunohost dyndns update > /dev/null 2>&1 \
       && echo "Removing the DynDNS cronjob..." \
@@ -260,26 +216,16 @@ remove_dyndns_cron() {
     rm -f /etc/cron.d/yunohost-dyndns
 }
 
-add_vpn_restart_cron() {
-    echo "Adding a cronjob to ensure the VPN functioning..."
-
-    echo "* * * * * root /sbin/ifconfig tun0 > /dev/null 2>&1 || systemctl restart ynh-vpnclient" > /etc/cron.d/restart-vpn
-}
-
-configure_DKIM() {
-    if [ "$install_dkim" = "Yes" ]; then
-        echo "Configuring the DKIM..."
-
-        git clone https://github.com/polytan02/yunohost_auto_config_basic
-        pushd yunohost_auto_config_basic
-        source ./5_opendkim.sh
-        popd
-    fi
-}
-
 display_win_message() {
     ip6=$(ifconfig | grep -C4 tun0 | awk '/inet6 addr/{print $3}' | sed 's/\/64//' || echo 'ERROR')
     ip4=$(ifconfig | grep -C4 tun0 | awk '/inet addr/{print substr($2,6)}' || echo 'ERROR')
+
+    if [ -z "$ip6" ]; then
+      ip6=$(ifconfig | grep -C4 tun0 | awk '/addr inet6/{print $3}' | sed 's/\/64//' || echo 'ERROR')
+    fi
+    if [ -z "$ip4" ]; then
+      ip4=$(ifconfig | grep -C4 tun0 | awk '/inet adr/{print substr($2,5}' || echo 'ERROR')
+    fi
 
     cat <<EOF
 
@@ -297,13 +243,9 @@ _xmpp-server._tcp 14400 IN SRV 0 5 5269 $domain.
 @ 14400 IN MX 5 $domain.
 @ 14400 IN TXT "v=spf1 a mx ip4:$ip4 ip6:$ip6 -all"
 
-$(cat /etc/opendkim/keys/$domain/mail.txt > /dev/null 2>&1 || echo '')
+$(cat /etc/dkim/$domain.mail.txt > /dev/null 2>&1 || echo '')
 
 EOF
-
-    if [ ! -z "$additional_domain" ]; then
-        echo "/!\\ Do not forget to configure your DNS records for '$additional_domain' as well"
-    fi
 
     cat <<EOF
 
@@ -327,18 +269,13 @@ modify_hosts
 upgrade_system
 
 postinstall_yunohost
-add_additional_domain
-fix_userdir_creation
 create_yunohost_user
 install_vpnclient
 configure_vpnclient
 install_hotspot
 configure_hostpot
 
-fix_yunohost_services
 remove_dyndns_cron
-add_vpn_restart_cron
-configure_DKIM
 
 display_win_message
 
