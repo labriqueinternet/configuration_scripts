@@ -1,6 +1,7 @@
 #!/bin/bash
 
 dummy_pwd=arn-fai.net
+cubename="Brique"
 NC='\033[0m'
 BLUE='\033[0;34m'
 LBLUE='\033[1;34m'
@@ -12,12 +13,12 @@ RED='\033[0;31m'
 echo -e "${LGREEN}
   _____________________________________________________________________________________________${NC}
 
-                  Vous êtes sur le point de configurer une Brique d'ARN
+                  Vous êtes sur le point de configurer une $cubename d'ARN
 
 
   * Tous les mots de passe seront : ${RED}\e[4m${dummy_pwd}${NC}\e[24m (à changer après l'exécution de ce script)
 
-  * Ce script a besoin d'être executé en temps que root ${RED}\e[4mSUR${NC}\e[24m la brique à partir d'une image
+  * Ce script a besoin d'être executé en temps que root ${RED}\e[4mSUR${NC}\e[24m la $cubename à partir d'une image
     labriqueinternet_A20LIME_2015-11-09.img ou plus récente installée sur la carte SD
 
   * Si vous rencontrez des problèmes, référez-vous à la documentation originale :
@@ -33,52 +34,54 @@ get_variables() {
     if [ -f arn-fai.variables ]; then
         source arn-fai.variables
     else
+        if [ -z "${hostname}" ]; then
+           hostname="brique"
+        fi
         echo
-        echo "Main domain name (will be used to host your email and services)"
-        echo "i.e.: example.com"
+        echo -e "${RED}[Obligatoire] ${LGREEN}Domaine principal (sera utilisé pour héberger vos emails et autres services)\n${GRAY}ex: example.org${NC}"
         read domain
         echo
-        echo "Username (used to connect to the user interface and access your apps, must be composed of lowercase letters and numbers only)"
-        echo "i.e.: jonsnow"
+        echo -e "${RED}[Obligatoire] ${LGREEN}Nom d'utilisateur (utilisé pour se connecter à l'interface et acceder à vos applications (doit être composé de minuscules et de chiffres seulement)\n${GRAY}ex: jonsnow${NC}"
         read username
         echo
-        echo "Firstname (mandatory, used as your firstname when you send emails)"
-        echo "i.e.: Jon"
+        echo -e "${RED}[Obligatoire] ${LGREEN}Prénom (utilisé pour l'envoi des mails)\n${GRAY}ex: Jon${NC}"
         read firstname
         echo
-        echo "Lastname (mandatory, used as your lastname when you send emails)"
-        echo "i.e. Snow"
+        echo -e "${RED}[Obligatoire] ${LGREEN}Nom (utilisé pour l'envoi des mails)\n${GRAY}ex: Snow${NC}"
         read lastname
         echo
-        echo "Email (must contain one of the domain previously entered as second part)"
-        echo "i.e. jon@example.com"
+        echo -e "${RED}[Optionnel] ${LGREEN}Email (doit contenir un des domaines précédemments configurés)\n${GRAY}Defaut: ${username}@${domain}${NC}"
         read email
+        if [ -z "${email}" ]; then
+            email="${username}@${domain}"
+        fi
         echo
-        echo "VPN client certificate (paste all the content of client.crt below and end with a blank line): "
+        echo "Certificat VPN client (coller le contenu du fichier XXXXXX.crt et appuyer sur Entrée): "
         vpn_client_crt=$(sed '/^$/q' | sed 's/-----BEGIN CERTIFICATE-----//' | sed 's/-----END CERTIFICATE-----//' | sed '/^$/d')
         echo
-        echo "VPN client key (paste all the content of client.key below and end with a blank line): "
+        echo "Clé privée du VPN (coller le contenu du fichier XXXXXX.key et appuyer sur Entrée): "
         vpn_client_key=$(sed '/^$/q' | sed 's/-----BEGIN PRIVATE KEY-----//' | sed 's/-----END PRIVATE KEY-----//' | sed '/^$/d')
         echo
-        echo "CA server certificate (paste all the content of ca.crt below and end with a blank line): "
+        echo "Certificat CA du serveur (coller le contenu du fichier ca.crt et appuyer sur Entrée): "
         vpn_ca_crt=$(sed '/^$/q' | sed 's/-----BEGIN CERTIFICATE-----//' | sed 's/-----END CERTIFICATE-----//' | sed '/^$/d')
         echo
-        echo "IPv6 delegated prefix (without trailing /56, to be found in the arn-fai MGMT interface)"
-        echo "i.e.: 2001:913:1000:300::"
+        echo -e "${RED}[Obligatoire] ${LGREEN}Préfixe IPv6 délégué (sans /56)\n${GRAY}ex: 2001:913:1000:300::${NC}"
         read ip6_net
         echo
-        echo "WiFi AP SSID (that will appear right after this configuration script ending)"
-        echo "i.e.: MyWunderbarNeutralNetwork"
+        echo -e "${RED}[Optionnel] ${LGREEN}Nom du SSID de votre hotspot Wifi (le nom du réseau Wifi qui sera actif à la fin de cette configuration)\n${GRAY}Defaut: arn-fai.net${NC}"
         read wifi_ssid
+        if [ -z "${wifi_ssid}" ]; then
+            wifi_ssid="arn-fai.net"
+        fi
         echo
         echo "Le dongle wifi est-il propriétaire ?"
         echo "(yes/no)"
         read nonfree_dongle
         echo
         echo
-        echo "The installation will proceed, please verify the parameters above one last time."
-        read -rsp $'Press any key to continue...\n' -n1 yolo
-        echo
+        echo -e "\n${LGREEN}L'installation va commencer… merci de bien vérifier une dernière fois les paramètres ci-dessus.${BLUE}"
+        read -rsp $'Pressez n\'importe quelle touche pour continuer...\n' -n1 yolo
+        echo -e "${NC}\n"
 
         # Store all the variables into a file
         for var in domain username firstname lastname email ip6_net wifi_ssid nonfree_dongle; do
@@ -91,45 +94,93 @@ get_variables() {
     fi
 }
 
+modify_hostname() {
+    echo -e "${LGREEN}"
+    echo -e " ============================= "
+    echo -e " Modification du nom réseau..."
+    echo -e " ============================= ${NC}\n"
+
+
+    echo "$hostname" > /etc/hostname
+    echo -e "${LBLUE}\e[1m   ----> Fait ! \e[21m${NC}"
+}
+
 modify_hosts() {
     # to resolve the domain properly
-    echo "Modifying hosts..."
+    echo -e "${LGREEN}"
+    echo -e " ========================= "
+    echo -e " Modification des hôtes... "
+    echo -e " ========================= ${NC}\n"
 
     grep -q "olinux" /etc/hosts \
-      || echo "127.0.0.1 $domain $additional_domain olinux" >> /etc/hosts
+      || echo "127.0.0.1 $domain $hostname" >> /etc/hosts
+    echo -e "${LBLUE}\e[1m   ----> Fait ! \e[21m${NC}"
 }
 
 upgrade_system() {
-    echo "Upgrading Debian packages..."
+    echo -e "${LGREEN}"
+    echo -e " ================================= "
+    echo -e " Mise à jour des paquets Debian..."
+    echo -e " ================================= ${NC}\n"
 
     apt-get update -qq
     apt-get dist-upgrade -y
+    echo -e "${LBLUE}\e[1m   ----> Fait ! \e[21m${NC}"
 }
 
 postinstall_yunohost() {
-    echo "Launching YunoHost post-installation..."
-
-    yunohost tools postinstall -d $domain -p $dummy_pwd
+    echo -e "${LGREEN}"
+    echo -e " ================================================ "
+    echo -e " Lancement de la post-installation de YunoHost..."
+    echo -e " ================================================ ${NC}\n"
+    if [ -f /etc/yunohost/installed ]; then
+        echo -e "${LGREEN}"
+        echo -e " ## La post-installation a déjà eu lieu, passage à la suite... ##\n"
+    else
+        yunohost tools postinstall -d $domain -p $dummy_pwd
+        echo -e "${LBLUE}\e[1m   ----> Fait ! \e[21m${NC}"
+    fi
 }
 
 
 create_yunohost_user() {
-    echo "Creating the first YunoHost user..."
+    echo -e "${LGREEN}"
+    echo -e " =========================================== "
+    echo -e " Création du premier utilisateur YunoHost..."
+    echo -e " =========================================== ${NC}\n"
 
-    yunohost user create $username -f "$firstname" -l "$lastname" -m $email \
-      -q 0 -p $dummy_pwd
+    if [ -n "$(yunohost user list | grep username)" ]; then
+        echo -e "${LGREEN}"
+        echo -e " ## Il y a déjà un utilisateur principal, passage à la suite... ##\n"
+    else
+        yunohost user create $username -f $firstname -l $lastname -m $email \
+          -q 0 -p $dummy_pwd
+        echo -e "${LBLUE}\e[1m   ----> Fait ! \e[21m${NC}"
+    fi
 }
 
 install_vpnclient() {
-    echo "Installing the VPN client application..."
+    echo -e "${LGREEN}"
+    echo -e " ======================================================== "
+    echo -e " Installation du client VPN (tunnel chiffré de Rézine)..."
+    echo -e " ======================================================== ${NC}\n"
 
-    yunohost app install https://github.com/labriqueinternet/vpnclient_ynh \
-      --args "domain=$domain&path=/vpnadmin&server_name=vpn.arn-fai.net"
+    if [ -n "$(yunohost app info vpnclient)" ]; then
+        echo -e "${LGREEN}"
+        echo -e " ## L'application vpnclient est déjà installée, passage à la suite... ##\n"
+    else
+        yunohost app install https://github.com/labriqueinternet/vpnclient_ynh \
+          --args "domain=$domain&path=/vpnadmin&server_name=vpn.arn-fai.net"
+        echo -e "${LBLUE}\e[1m   ----> Fait ! \e[21m${NC}"
+    fi
 }
 
 
 configure_vpnclient() {
-    echo "Configuring the VPN connection..."
+    echo -e "${LGREEN}"
+    echo -e " ==================================================== "
+    echo -e " Configuration de la connection par tunnel chiffré..."
+    echo -e " ==================================================== ${NC}\n"
 
     # Restrict user access to the app
     yunohost app addaccess vpnclient -u $username
@@ -170,23 +221,39 @@ EOF
     # Add the service to YunoHost's monitored services
     yunohost service add ynh-vpnclient -l /var/log/openvpn-client.log
 
-    echo "Restarting OpenVPN..."
+    echo -e "${LGREEN}"
+    echo -e " ===================== "
+    echo -e " Restarting OpenVPN..."
+    echo -e " ===================== ${NC}\n"
     systemctl restart ynh-vpnclient \
       || (echo "Logs:" && cat /var/log/openvpn-client.log && exit 1)
     sleep 5
+    echo -e "${LBLUE}\e[1m   ----> Fait ! \e[21m${NC}"
 }
 
 
 install_hotspot() {
-    echo "Installing the Hotspot application..."
+    echo -e "${LGREEN}"
+    echo -e " ======================================== "
+    echo -e " Installation de l'application Hotspot..."
+    echo -e " ======================================== ${NC}\n"
 
-    yunohost app install https://github.com/labriqueinternet/hotspot_ynh \
-      --args "domain=$domain&path=/wifiadmin&wifi_ssid=$wifi_ssid&wifi_passphrase=$dummy_pwd&firmware_nonfree=$nonfree_dongle"
+    if [ -n "$(yunohost app info hotspot)" ]; then
+         echo -e "${LGREEN}"
+         echo -e " ## L'application hotspot est déjà installée, passage à la suite... ##\n"
+    else
+        yunohost app install https://github.com/labriqueinternet/hotspot_ynh \
+          --args "domain=$domain&path=/wifiadmin&wifi_ssid=$wifi_ssid&wifi_passphrase=$dummy_pwd&firmware_nonfree=$nonfree_dongle"
+        echo -e "${LBLUE}\e[1m   ----> Fait ! \e[21m${NC}"
+    fi
 }
 
 
 configure_hostpot() {
-    echo "Configuring the hotspot..."
+    echo -e "${LGREEN}"
+    echo -e " ========================================= "
+    echo -e " Configuration de l'application Hotspot..."
+    echo -e " ========================================= ${NC}\n"
 
     # Removing the persistent Net rules to keep the Wifi device to wlan0
     rm -f /etc/udev/rules.d/70-persistent-net.rules
@@ -202,8 +269,12 @@ configure_hostpot() {
     # Add the service to YunoHost's monitored services
     yunohost service add ynh-hotspot -l /var/log/syslog
 
-    echo "Restarting the hotspot..."
+    echo -e "${LGREEN}"
+    echo -e " ========================= "
+    echo -e " Restarting the hotspot..."
+    echo -e " ========================= ${NC}\n"
     systemctl restart ynh-hotspot
+    echo -e "${LBLUE}\e[1m   ----> Fait ! \e[21m${NC}"
 }
 
 
@@ -213,10 +284,17 @@ configure_hostpot() {
 
 remove_dyndns_cron() {
     yunohost dyndns update > /dev/null 2>&1 \
-      && echo "Removing the DynDNS cronjob..." \
-      || echo "No DynDNS to remove"
+      && echo -e "${LGREEN}"
+         echo -e " ================================== "
+         echo -e " Suppression du cron pour DynDNS..."
+         echo -e " ================================== ${NC}\n" \
+      || echo -e "${LGREEN}"
+         echo -e " ========================= "
+         echo -e " Pas de Dyndns à supprimer"
+         echo -e " ========================= ${NC}\n"
 
     rm -f /etc/cron.d/yunohost-dyndns
+    echo -e "${LBLUE}\e[1m   ----> Fait ! \e[21m${NC}"
 }
 
 
@@ -227,44 +305,50 @@ display_win_message() {
     fi
     ip4=$(ifconfig tun0 | awk '/inet adr/{print substr($2,5)}' || echo 'ERROR')
 
-    cat <<EOF
+    echo -e "\nVotre $cubename a été correctement configurée."
 
-VICTOIRE !
+    sleep 2
 
-Your Cube has been configured properly. Please set your DNS records as below:
+    echo -e "${LGREEN}
+    --> Veuillez maintenant configurer vos DNS comme ceci :
+    __________________________________________________________________________${NC}
+    @ 14400 IN A $ip4
+    * 14400 IN A $ip4
+    @ 14400 IN AAAA $ip6
+    * 14400 IN AAAA $ip6
+    www 1800 IN CNAME @
 
-@ 14400 IN A $ip4
-* 14400 IN A $ip4
-@ 14400 IN AAAA $ip6
-* 14400 IN AAAA $ip6
-_xmpp-client._tcp 14400 IN SRV 0 5 5222 $domain.
-_xmpp-server._tcp 14400 IN SRV 0 5 5269 $domain.
+    _xmpp-client._tcp 14400 IN SRV 0 5 5222 $domain.
+    _xmpp-server._tcp 14400 IN SRV 0 5 5269 $domain.
+    muc 1800 IN CNAME @
+    pubsub 1800 IN CNAME @
+    vjud 1800 IN CNAME @
 
-@ 14400 IN MX 5 $domain.
-@ 14400 IN TXT "v=spf1 a mx ip4:$ip4 ip6:$ip6 -all"
+    @ 14400 IN MX 5 $domain.
+    @ 14400 IN TXT \"v=spf1 a mx ip4:$ip4 -all\""
 
-$(cat /etc/dkim/$domain.mail.txt)
+    $(cat /etc/dkim/$domain.mail.txt || echo '')
+    echo -e "${LGREEN}__________________________________________________________________________${GRAY}
+    (Pour d'avantage d'information sur la configuration des DNS, visitez
+    cette page : ${LBLUE}https://yunohost.org/#/dns_fr${GRAY})"
 
-EOF
+    echo -e "
+    \n${LGREEN}--> Et n'oubliez pas de changer :
+    __________________________________________________________________________${NC}
 
+      * Le mot de passe d'administration via l'interface Web de la $cubename :
+        ${LBLUE}http://${domain}/yunohost/admin/#/tools/adminpw${NC}
 
-echo -e "
-\n${LGREEN}--> Et n'oubliez pas de changer :
-__________________________________________________________________________${NC}
+      * Le mot de passe de l'utilisateur via l'interface Web de la $cubename :
+        ${LBLUE}http://${domain}/yunohost/admin/#/users/${username}/edit${NC}
 
-  * Le mot de passe d'administration via l'interface Web de la Brique :
-    ${LBLUE}http://${domain}/yunohost/admin/#/tools/adminpw${NC}
+      * Le(s) mot(s) de passe Wifi (WPA2) via l'interface Web de la $cubename :
+        ${LBLUE}http://${domain}/wifiadmin${NC}
 
-  * Le mot de passe de l'utilisateur via l'interface Web de la Brique :
-    ${LBLUE}http://${domain}/yunohost/admin/#/users/${username}/edit${NC}
-
-  * Le(s) mot(s) de passe Wifi (WPA2) via l'interface Web de la Brique :
-    ${LBLUE}http://${domain}/wifiadmin${NC}
-
-  * Et si vous ne l'avez pas fait, le mot de passe root avec la commande :
-    ${RED}passwd${LGREEN}
-__________________________________________________________________________${NC}"
-echo -e "\nEt pour toute question, n'hésitez pas à envoyer un mail à contact@arn-fai.net\n"
+      * Et si vous ne l'avez pas fait, le mot de passe root avec la commande :
+        ${RED}passwd${LGREEN}
+    __________________________________________________________________________${NC}"
+    echo -e "\nEt pour toute question, n'hésitez pas à envoyer un mail à contact@arn-fai.net\n"
 
 }
 
@@ -275,6 +359,7 @@ echo -e "\nEt pour toute question, n'hésitez pas à envoyer un mail à contact@
 
 get_variables
 
+modify_hostname
 modify_hosts
 upgrade_system
 
