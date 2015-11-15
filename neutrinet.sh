@@ -91,7 +91,7 @@ modify_hosts() {
 upgrade_system() {
     echo "Upgrading Debian packages..."
 
-    sed -i 's/testing//g' /etc/apt/sources.list.d/yunohost.list
+    echo "deb http://repo.yunohost.org/debian jessie stable" > /etc/apt/sources.list.d/yunohost.list
 
     apt-get update -qq
     apt-get dist-upgrade -y
