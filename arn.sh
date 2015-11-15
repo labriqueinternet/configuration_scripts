@@ -56,13 +56,13 @@ get_variables() {
             email="${username}@${domain}"
         fi
         echo
-        echo "Certificat VPN client (coller le contenu du fichier XXXXXX.crt et appuyer sur Entrée): "
+        echo -e "${RED}[Obligatoire] ${LGREEN}Certificat VPN client (coller le contenu du fichier XXXXXX.crt et appuyer sur Entrée): "
         vpn_client_crt=$(sed '/^$/q' | sed 's/-----BEGIN CERTIFICATE-----//' | sed 's/-----END CERTIFICATE-----//' | sed '/^$/d')
         echo
-        echo "Clé privée du VPN (coller le contenu du fichier XXXXXX.key et appuyer sur Entrée): "
+        echo -e "${RED}[Obligatoire] ${LGREEN}Clé privée du VPN (coller le contenu du fichier XXXXXX.key et appuyer sur Entrée): "
         vpn_client_key=$(sed '/^$/q' | sed 's/-----BEGIN PRIVATE KEY-----//' | sed 's/-----END PRIVATE KEY-----//' | sed '/^$/d')
         echo
-        echo "Certificat CA du serveur (coller le contenu du fichier ca.crt et appuyer sur Entrée): "
+        echo -e "${RED}[Obligatoire] ${LGREEN}Certificat CA du serveur (coller le contenu du fichier ca.crt et appuyer sur Entrée): "
         vpn_ca_crt=$(sed '/^$/q' | sed 's/-----BEGIN CERTIFICATE-----//' | sed 's/-----END CERTIFICATE-----//' | sed '/^$/d')
         echo
         echo -e "${RED}[Obligatoire] ${LGREEN}Préfixe IPv6 délégué (sans /56)\n${GRAY}ex: 2001:913:1000:300::${NC}"
@@ -74,7 +74,7 @@ get_variables() {
             wifi_ssid="arn-fai.net"
         fi
         echo
-        echo "Le dongle wifi est-il propriétaire ?"
+        echo "${RED}[Obligatoire] ${LGREEN}Le dongle wifi est-il propriétaire ?"
         echo "(yes/no)"
         read nonfree_dongle
         echo
@@ -162,7 +162,7 @@ create_yunohost_user() {
 install_vpnclient() {
     echo -e "${LGREEN}"
     echo -e " ======================================================== "
-    echo -e " Installation du client VPN (tunnel chiffré de Rézine)..."
+    echo -e " Installation du client VPN (tunnel chiffré d'ARN')..."
     echo -e " ======================================================== ${NC}\n"
 
     if [ -n "$(yunohost app info vpnclient)" ]; then
