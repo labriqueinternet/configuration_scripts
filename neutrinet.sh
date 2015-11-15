@@ -216,6 +216,10 @@ remove_dyndns_cron() {
     rm -f /etc/cron.d/yunohost-dyndns
 }
 
+restart_api() {
+    systemctl restart yunohost-api
+}
+
 display_win_message() {
     ip6=$(ifconfig | grep -C4 tun0 | awk '/inet6 addr/{print $3}' | sed 's/\/64//' || echo 'ERROR')
     ip4=$(ifconfig | grep -C4 tun0 | awk '/inet addr/{print substr($2,6)}' || echo 'ERROR')
@@ -276,6 +280,7 @@ install_hotspot
 configure_hostpot
 
 remove_dyndns_cron
+restart_api
 
 display_win_message
 
