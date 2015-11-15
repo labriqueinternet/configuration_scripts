@@ -74,7 +74,7 @@ get_variables() {
             wifi_ssid="arn-fai.net"
         fi
         echo
-        echo "${RED}[Obligatoire] ${LGREEN}Le dongle wifi est-il propriétaire ?"
+        echo -e "${RED}[Obligatoire] ${LGREEN}Le dongle wifi est-il propriétaire ?"
         echo "(yes/no)"
         read nonfree_dongle
         echo
@@ -325,9 +325,10 @@ display_win_message() {
     vjud 1800 IN CNAME @
 
     @ 14400 IN MX 5 $domain.
-    @ 14400 IN TXT \"v=spf1 a mx ip4:$ip4 -all\""
+    @ 14400 IN TXT \"v=spf1 a mx ip4:$ip4 -all\"
+    "
 
-    $(cat /etc/dkim/$domain.mail.txt || echo '')
+    cat /etc/dkim/$domain.mail.txt || echo ''
     echo -e "${LGREEN}__________________________________________________________________________${GRAY}
     (Pour d'avantage d'information sur la configuration des DNS, visitez
     cette page : ${LBLUE}https://yunohost.org/#/dns_fr${GRAY})"
