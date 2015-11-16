@@ -221,15 +221,8 @@ restart_api() {
 }
 
 display_win_message() {
-    ip6=$(ifconfig | grep -C4 tun0 | awk '/inet6 addr/{print $3}' | sed 's/\/64//' || echo 'ERROR')
-    ip4=$(ifconfig | grep -C4 tun0 | awk '/inet addr/{print substr($2,6)}' || echo 'ERROR')
-
-    if [ -z "$ip6" ]; then
-      ip6=$(ifconfig | grep -C4 tun0 | awk '/addr inet6/{print $3}' | sed 's/\/64//' || echo 'ERROR')
-    fi
-    if [ -z "$ip4" ]; then
-      ip4=$(ifconfig | grep -C4 tun0 | awk '/inet adr/{print substr($2,5}' || echo 'ERROR')
-    fi
+    ip6=$(ip -6 addr show tun0 | awk -F'[/ ]' '/inet/{print $6}' || echo 'ERROR')
+    ip4=$(ip -4 addr show tun0 | awk -F'[/ ]' '/inet/{print $6}' || echo 'ERROR')
 
     cat <<EOF
 
