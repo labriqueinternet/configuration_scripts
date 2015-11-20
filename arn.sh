@@ -373,6 +373,7 @@ get_variables
 
 modify_hostname
 modify_hosts
+install_free_dongle_drivers
 upgrade_system
 
 postinstall_yunohost
