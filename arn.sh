@@ -112,9 +112,20 @@ modify_hosts() {
     echo -e " Modification des hôtes... "
     echo -e " ========================= ${NC}\n"
 
-    grep -q "olinux" /etc/hosts \
+    grep -q "$hostname" /etc/hosts \
       || echo "127.0.0.1 $domain $hostname" >> /etc/hosts
     echo -e "${LBLUE}\e[1m   ----> Fait ! \e[21m${NC}"
+}
+
+install_free_dongle_drivers() {
+    if [ "$nonfree_dongle" = "no" ]; then
+        wget -O /lib/firmware/htc_7010.fw "https://github.com/labriqueinternet/hotspot_ynh/raw/master/conf/firmware_htc-7010.fw"
+        wget -O /lib/firmware/htc_9271.fw "https://github.com/labriqueinternet/hotspot_ynh/raw/master/conf/firmware_htc-9271.fw"
+    
+        echo -e "\n${LGREEN}Les drivers libres du dongle WiFi ont été installés, veuillez débrancher puis rebrancher le dongle WiFi de votre Brique.${BLUE}"
+        read -rsp $'Pressez n\'importe quelle touche une fois le dongle rebranché...\n' -n1 yolo
+        echo -e "${NC}\n"
+    fi
 }
 
 upgrade_system() {
