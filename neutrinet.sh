@@ -250,6 +250,7 @@ EOF
   * The administration password
   * The user password
   * The root password
+  * The root SSH password
   * The Wifi AP password
 EOF
 
