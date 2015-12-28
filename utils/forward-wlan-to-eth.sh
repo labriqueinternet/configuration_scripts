@@ -36,7 +36,7 @@ wlan='wlan0'
 eth='eth0'
 action=''
 
-while getopts ":i:o:a" opt; do
+while getopts "i:o:a:" opt; do
   case $opt in
     i)
       wlan=$OPTARG
