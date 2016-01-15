@@ -5,11 +5,19 @@ dummy_pwd=neutrinet
 cat <<EOF
 
 You are about to configure an Internet Cube for Neutrinet.
-All the passwords will be: '$dummy_pwd' (to change after this script's execution)
+All the passwords; yunohost admin account, openvpn password and the password for 
+the AP, will be: '$dummy_pwd'. Consider changing them after installtion.
 
-/!\\ This script has to be run as root *on* the Cube itself, on a labriqueinternet_A20LIME_2015-11-09.img SD card (or newer)
-/!\\ If you run into trouble, please refer to the original documentation page: https://yunohost.org/installation_brique_fr
-
+/!\\ This script has to be run as root *on* the Cube itself, on a 
+	labriqueinternet_A20LIME_2015-11-09.img SD card (or newer)
+/!\\ If you run into trouble, please refer to the original 
+	documentation page: https://yunohost.org/installation_brique_fr
+/!\\ Be aware that as soon as the vpn goes live that root can log in over 
+	the vpn with choosen password! You might consider revising the root 
+	password before continuing. Choosing a dictionary word or 12345678 
+	is not the best thing to do here, instead have a look at 
+	https://ssd.eff.org/en/module/creating-strong-passwords for advice 
+	on creating a strong password.
 EOF
 
 # Exit if any of the following command fails
@@ -19,6 +27,25 @@ get_variables() {
 
     if [ -f neutrinet.variables ]; then
         source neutrinet.variables
+	echo "****************************************************************"
+	echo The following settings will apply
+	echo ""
+	echo domain = $domain
+	echo username = $username
+	echo firstname = $firstname
+	echo lastgname = $lastname
+	echo email = $email
+	echo vpn_username = $vpn_username
+	echo "vpn_pwd = **********"
+	echo ip6_net = $ip6_net
+	echo wifi_ssid = $wifi_ssid
+	echo vpn_ca_crt = ${vpn_ca_crt:0:64}
+	echo vpn_client_key = ${vpn_client_key:0:64}
+	echo vpn_client_crt = ${vpn_client_crt:0:64}
+	echo ""
+	echo "****************************************************************"
+	echo Press any key to continue or CTRL-C to abort
+	read
     else
         echo
         echo "Main domain name (will be used to host your email and services)"
@@ -247,11 +274,11 @@ EOF
     cat <<EOF
 
 /!\\ Do not forget to change:
-  * The administration password
-  * The user password
-  * The root password
-  * The root SSH password
-  * The Wifi AP password
+  * The root password on the OS-level: # passwd
+  * The administration password in yunohost
+  * The regular user password in yunohost
+  * The VPN client password administered in yunohost
+  * The Wifi AP password administered in yunohost
 EOF
 
 }
