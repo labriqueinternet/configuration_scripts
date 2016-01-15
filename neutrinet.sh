@@ -111,6 +111,7 @@ modify_hosts() {
     # to resolve the domain properly
     echo "Modifying hosts..."
 
+    set -x
     grep -q "olinux" /etc/hosts \
       || echo "127.0.0.1 $domain olinux" >> /etc/hosts
 }
@@ -118,6 +119,7 @@ modify_hosts() {
 upgrade_system() {
     echo "Upgrading Debian packages..."
 
+    set -x
     echo "deb http://repo.yunohost.org/debian jessie stable" > /etc/apt/sources.list.d/yunohost.list
 
     apt-get update -qq
@@ -127,12 +129,14 @@ upgrade_system() {
 postinstall_yunohost() {
     echo "Launching YunoHost post-installation..."
 
+    set -x
     yunohost tools postinstall -d $domain -p $dummy_pwd
 }
 
 create_yunohost_user() {
     echo "Creating the first YunoHost user..."
 
+    set -x
     yunohost user create $username -f "$firstname" -l "$lastname" -m $email \
       -q 0 -p $dummy_pwd
 }
@@ -140,6 +144,7 @@ create_yunohost_user() {
 install_vpnclient() {
     echo "Installing the VPN client application..."
 
+    set -x
     yunohost app install https://github.com/labriqueinternet/vpnclient_ynh \
       --args "domain=$domain&path=/vpnadmin&server_name=vpn.neutrinet.be"
 }
@@ -148,6 +153,7 @@ install_vpnclient() {
 configure_vpnclient() {
     echo "Configuring the VPN connection..."
 
+    set -x
     # Restrict user access to the app
     yunohost app addaccess vpnclient -u $username
     
@@ -204,6 +210,7 @@ EOF
 install_hotspot() {
     echo "Installing the Hotspot application..."
 
+    set -x
     yunohost app install https://github.com/labriqueinternet/hotspot_ynh \
       --args "domain=$domain&path=/wifiadmin&wifi_ssid=$wifi_ssid&wifi_passphrase=$dummy_pwd&firmware_nonfree=yes"
 }
@@ -212,6 +219,7 @@ install_hotspot() {
 configure_hostpot() {
     echo "Configuring the hotspot..."
 
+    set -x
     # Removing the persistent Net rules to keep the Wifi device to wlan0
     rm -f /etc/udev/rules.d/70-persistent-net.rules
 
@@ -236,6 +244,7 @@ configure_hostpot() {
 # ----------------------------------
 
 remove_dyndns_cron() {
+    set -x
     yunohost dyndns update > /dev/null 2>&1 \
       && echo "Removing the DynDNS cronjob..." \
       || echo "No DynDNS to remove"
@@ -244,6 +253,7 @@ remove_dyndns_cron() {
 }
 
 restart_api() {
+    set -x
     systemctl restart yunohost-api
 }
 
