@@ -2,23 +2,28 @@
 
 dummy_pwd=neutrinet
 
+clear
 cat <<EOF
 
+********************************************************************************
 You are about to configure an Internet Cube for Neutrinet.
-All the passwords; yunohost admin account, openvpn password and the password for 
-the AP, will be: '$dummy_pwd'. Consider changing them after installtion.
+All the passwords; yunohost admin account, openvpn password and the password 
+for the AP, will be: '$dummy_pwd'. Consider changing them after installation.
 
 /!\\ This script has to be run as root *on* the Cube itself, on a 
 	labriqueinternet_A20LIME_2015-11-09.img SD card (or newer)
 /!\\ If you run into trouble, please refer to the original 
 	documentation page: https://yunohost.org/installation_brique_fr
-/!\\ Be aware that as soon as the vpn goes live that root can log in over 
-	the vpn with choosen password! You might consider revising the root 
-	password before continuing. Choosing a dictionary word or 12345678 
-	is not the best thing to do here, instead have a look at 
-	https://ssd.eff.org/en/module/creating-strong-passwords for advice 
-	on creating a strong password.
+/!\\ Be aware that as soon as the vpn goes live the root user can log in over
+	the vpn with the chosen password! You might consider revising the root 
+	password before continuing. Choosing a dictionary word or 12345678 is 
+	not the best thing to do here, instead have a look at 
+	https://ssd.eff.org/en/module/creating-strong-passwords for advice on 
+	creating a strong password.
+
+Press any key to continue or CTRL-C to abort
 EOF
+read
 
 # Exit if any of the following command fails
 set -e
@@ -27,7 +32,7 @@ get_variables() {
 
     if [ -f neutrinet.variables ]; then
         source neutrinet.variables
-	echo "****************************************************************"
+	echo "********************************************************************************"
 	echo The following settings will apply
 	echo ""
 	echo domain = $domain
@@ -39,11 +44,11 @@ get_variables() {
 	echo "vpn_pwd = **********"
 	echo ip6_net = $ip6_net
 	echo wifi_ssid = $wifi_ssid
-	echo vpn_ca_crt = ${vpn_ca_crt:0:64}
-	echo vpn_client_key = ${vpn_client_key:0:64}
-	echo vpn_client_crt = ${vpn_client_crt:0:64}
+	echo vpn_ca_crt = ${vpn_ca_crt:0:46}...
+	echo vpn_client_key = ${vpn_client_key:0:46}...
+	echo vpn_client_crt = ${vpn_client_crt:0:46}...
 	echo ""
-	echo "****************************************************************"
+	echo "********************************************************************************"
 	echo Press any key to continue or CTRL-C to abort
 	read
     else
