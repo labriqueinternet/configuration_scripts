@@ -2,15 +2,28 @@
 
 dummy_pwd=neutrinet
 
+clear
 cat <<EOF
 
+********************************************************************************
 You are about to configure an Internet Cube for Neutrinet.
-All the passwords will be: '$dummy_pwd' (to change after this script's execution)
+All the passwords; yunohost admin account, openvpn password and the password 
+for the AP, will be: '$dummy_pwd'. Consider changing them after installation.
 
-/!\\ This script has to be run as root *on* the Cube itself, on a labriqueinternet_A20LIME_2015-11-09.img SD card (or newer)
-/!\\ If you run into trouble, please refer to the original documentation page: https://yunohost.org/installation_brique_fr
+/!\\ This script has to be run as root *on* the Cube itself, on a 
+	labriqueinternet_A20LIME_2015-11-09.img SD card (or newer)
+/!\\ If you run into trouble, please refer to the original 
+	documentation page: https://yunohost.org/installation_brique_fr
+/!\\ Be aware that as soon as the vpn goes live the root user can log in over
+	the vpn with the chosen password! You might consider revising the root 
+	password before continuing. Choosing a dictionary word or 12345678 is 
+	not the best thing to do here, instead have a look at 
+	https://ssd.eff.org/en/module/creating-strong-passwords for advice on 
+	creating a strong password.
 
+Press any key to continue or CTRL-C to abort
 EOF
+read
 
 # Exit if any of the following command fails
 set -e
@@ -19,6 +32,25 @@ get_variables() {
 
     if [ -f neutrinet.variables ]; then
         source neutrinet.variables
+	echo "********************************************************************************"
+	echo The following settings will apply
+	echo ""
+	echo domain = $domain
+	echo username = $username
+	echo firstname = $firstname
+	echo lastgname = $lastname
+	echo email = $email
+	echo vpn_username = $vpn_username
+	echo "vpn_pwd = **********"
+	echo ip6_net = $ip6_net
+	echo wifi_ssid = $wifi_ssid
+	echo vpn_ca_crt = ${vpn_ca_crt:0:46}...
+	echo vpn_client_key = ${vpn_client_key:0:46}...
+	echo vpn_client_crt = ${vpn_client_crt:0:46}...
+	echo ""
+	echo "********************************************************************************"
+	echo Press any key to continue or CTRL-C to abort
+	read
     else
         echo
         echo "Main domain name (will be used to host your email and services)"
@@ -84,6 +116,7 @@ modify_hosts() {
     # to resolve the domain properly
     echo "Modifying hosts..."
 
+    set -x
     grep -q "olinux" /etc/hosts \
       || echo "127.0.0.1 $domain olinux" >> /etc/hosts
 }
@@ -91,6 +124,7 @@ modify_hosts() {
 upgrade_system() {
     echo "Upgrading Debian packages..."
 
+    set -x
     echo "deb http://repo.yunohost.org/debian jessie stable" > /etc/apt/sources.list.d/yunohost.list
 
     apt-get update -qq
@@ -100,12 +134,14 @@ upgrade_system() {
 postinstall_yunohost() {
     echo "Launching YunoHost post-installation..."
 
+    set -x
     yunohost tools postinstall -d $domain -p $dummy_pwd
 }
 
 create_yunohost_user() {
     echo "Creating the first YunoHost user..."
 
+    set -x
     yunohost user create $username -f "$firstname" -l "$lastname" -m $email \
       -q 0 -p $dummy_pwd
 }
@@ -113,6 +149,7 @@ create_yunohost_user() {
 install_vpnclient() {
     echo "Installing the VPN client application..."
 
+    set -x
     yunohost app install https://github.com/labriqueinternet/vpnclient_ynh \
       --args "domain=$domain&path=/vpnadmin&server_name=vpn.neutrinet.be"
 }
@@ -121,6 +158,7 @@ install_vpnclient() {
 configure_vpnclient() {
     echo "Configuring the VPN connection..."
 
+    set -x
     # Restrict user access to the app
     yunohost app addaccess vpnclient -u $username
     
@@ -177,6 +215,7 @@ EOF
 install_hotspot() {
     echo "Installing the Hotspot application..."
 
+    set -x
     yunohost app install https://github.com/labriqueinternet/hotspot_ynh \
       --args "domain=$domain&path=/wifiadmin&wifi_ssid=$wifi_ssid&wifi_passphrase=$dummy_pwd&firmware_nonfree=yes"
 }
@@ -185,6 +224,7 @@ install_hotspot() {
 configure_hostpot() {
     echo "Configuring the hotspot..."
 
+    set -x
     # Removing the persistent Net rules to keep the Wifi device to wlan0
     rm -f /etc/udev/rules.d/70-persistent-net.rules
 
@@ -209,6 +249,7 @@ configure_hostpot() {
 # ----------------------------------
 
 remove_dyndns_cron() {
+    set -x
     yunohost dyndns update > /dev/null 2>&1 \
       && echo "Removing the DynDNS cronjob..." \
       || echo "No DynDNS to remove"
@@ -217,6 +258,7 @@ remove_dyndns_cron() {
 }
 
 restart_api() {
+    set -x
     systemctl restart yunohost-api
 }
 
@@ -247,11 +289,11 @@ EOF
     cat <<EOF
 
 /!\\ Do not forget to change:
-  * The administration password
-  * The user password
-  * The root password
-  * The root SSH password
-  * The Wifi AP password
+  * The root password on the OS-level: # passwd
+  * The administration password in yunohost
+  * The regular user password in yunohost
+  * The VPN client password administered in yunohost
+  * The Wifi AP password administered in yunohost
 EOF
 
 }
