@@ -128,7 +128,9 @@ upgrade_system() {
     echo "deb http://repo.yunohost.org/debian jessie stable" > /etc/apt/sources.list.d/yunohost.list
 
     apt-get update -qq
-    apt-get dist-upgrade -y
+    
+    # untile this 4.5 kernel thing is fixed
+    # apt-get dist-upgrade -y
 }
 
 postinstall_yunohost() {
