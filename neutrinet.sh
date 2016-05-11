@@ -121,6 +121,10 @@ modify_hosts() {
       || echo "127.0.0.1 $domain olinux" >> /etc/hosts
 }
 
+set_locales() {
+    [ "$(grep LC_ALL /etc/environment)" ] || echo 'LC_ALL="fr_FR.UTF-8"' >> /etc/environment
+}
+
 upgrade_system() {
     echo "Upgrading Debian packages..."
 
@@ -309,6 +313,7 @@ EOF
 get_variables
 
 modify_hosts
+set_locales
 upgrade_system
 
 postinstall_yunohost
