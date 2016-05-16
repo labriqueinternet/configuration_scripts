@@ -1,6 +1,6 @@
 #!/usr/bin/env ruby
 #
-# Copyright (C) 2015 LaBriqueInternet <discussions@listes.labriqueinter.net>
+# Copyright (C) 2015 Sebastien Badia <seb@sebian.fr>
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -38,11 +38,12 @@ if ! File.exist?("/srv/ca-openvpn-clients/keys/#{user}.crt")
 end
 
 vpn['ip6_net'] = yaml['openvpn::users'][user]['prefix']
-vpn['crt_server_ca'] = File.read('/root/ca_server.crt')
-vpn['crt_client'] = File.read("/srv/ca-openvpn-clients/keys/#{user}.crt")
-vpn['crt_client_key'] = File.read("/srv/ca-openvpn-clients/keys/#{user}.key")
+vpn['ip4_addr'] = yaml['openvpn::users'][user]['ipv4']
+vpn['crt_server_ca'] = File.read('/root/ca_server.crt').strip.tr("\n", '|')
+vpn['crt_client'] = File.read("/srv/ca-openvpn-clients/keys/#{user}.crt").strip.tr("\n", '|')[/-----.*-----/]
+vpn['crt_client_key'] = File.read("/srv/ca-openvpn-clients/keys/#{user}.key").strip.tr("\n", '|')
 
-File.open("/srv/dotcube/#{user}.json","w") do |f|
+File.open("/srv/dotcube/#{user}.cube","w") do |f|
   f.write(JSON.pretty_generate(common.merge(vpn)))
 end
-puts "dotcube file generated /srv/dotcube/#{user}.json"
+puts "dotcube file generated /srv/dotcube/#{user}.cube"
