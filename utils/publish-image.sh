@@ -9,6 +9,7 @@ date=$1
 if [ -z "$date" ]; then
   echo 'please provide an image date!'
   echo '  % publish-image.sh 2016-05-21'
+  exit 1
 fi
 
 function check_bins() {
