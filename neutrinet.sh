@@ -7,19 +7,19 @@ cat <<EOF
 
 ********************************************************************************
 You are about to configure an Internet Cube for Neutrinet.
-All the passwords; yunohost admin account, openvpn password and the password 
+All the passwords; yunohost admin account, openvpn password and the password
 for the AP, will be: '$dummy_pwd'. Consider changing them after installation.
 
-/!\\ This script has to be run as root *on* the Cube itself, on a 
-	labriqueinternet_A20LIME_2015-11-09.img SD card (or newer)
-/!\\ If you run into trouble, please refer to the original 
-	documentation page: https://yunohost.org/installation_brique_fr
+/!\\ This script has to be run as root *on* the Cube itself, on a
+    labriqueinternet_A20LIME_2015-11-09.img SD card (or newer)
+/!\\ If you run into trouble, please refer to the original
+    documentation page: https://yunohost.org/installation_brique_fr
 /!\\ Be aware that as soon as the vpn goes live the root user can log in over
-	the vpn with the chosen password! You might consider revising the root 
-	password before continuing. Choosing a dictionary word or 12345678 is 
-	not the best thing to do here, instead have a look at 
-	https://ssd.eff.org/en/module/creating-strong-passwords for advice on 
-	creating a strong password.
+    the vpn with the chosen password! You might consider revising the root
+    password before continuing. Choosing a dictionary word or 12345678 is
+    not the best thing to do here, instead have a look at
+    https://ssd.eff.org/en/module/creating-strong-passwords for advice on
+    creating a strong password.
 
 Press any key to continue or CTRL-C to abort
 EOF
@@ -32,25 +32,25 @@ get_variables() {
 
     if [ -f neutrinet.variables ]; then
         source neutrinet.variables
-	echo "********************************************************************************"
-	echo The following settings will apply
-	echo ""
-	echo domain = $domain
-	echo username = $username
-	echo firstname = $firstname
-	echo lastgname = $lastname
-	echo email = $email
-	echo vpn_username = $vpn_username
-	echo "vpn_pwd = **********"
-	echo ip6_net = $ip6_net
-	echo wifi_ssid = $wifi_ssid
-	echo vpn_ca_crt = ${vpn_ca_crt:0:46}...
-	echo vpn_client_key = ${vpn_client_key:0:46}...
-	echo vpn_client_crt = ${vpn_client_crt:0:46}...
-	echo ""
-	echo "********************************************************************************"
-	echo Press any key to continue or CTRL-C to abort
-	read
+    echo "********************************************************************************"
+    echo The following settings will apply
+    echo ""
+    echo domain = $domain
+    echo username = $username
+    echo firstname = $firstname
+    echo lastgname = $lastname
+    echo email = $email
+    echo vpn_username = $vpn_username
+    echo "vpn_pwd = **********"
+    echo ip6_net = $ip6_net
+    echo wifi_ssid = $wifi_ssid
+    echo vpn_ca_crt = ${vpn_ca_crt:0:46}...
+    echo vpn_client_key = ${vpn_client_key:0:46}...
+    echo vpn_client_crt = ${vpn_client_crt:0:46}...
+    echo ""
+    echo "********************************************************************************"
+    echo Press any key to continue or CTRL-C to abort
+    read
     else
         echo
         echo "Main domain name (will be used to host your email and services)"
@@ -132,7 +132,7 @@ upgrade_system() {
     echo "deb http://repo.yunohost.org/debian jessie stable" > /etc/apt/sources.list.d/yunohost.list
 
     apt-get update -qq
-    
+
     # untile this 4.5 kernel thing is fixed
     # apt-get dist-upgrade -y
     apt-get install yunohost yunohost-admin moulinette nslcd -y
@@ -168,7 +168,7 @@ configure_vpnclient() {
     set -x
     # Restrict user access to the app
     yunohost app addaccess vpnclient -u $username
-    
+
     # Neutrinet related: add some VPN configuration directives
     cat >> /etc/openvpn/client.conf.tpl <<EOF
 
@@ -203,15 +203,15 @@ EOF
     yunohost app setting vpnclient server_port -v "1194"
     yunohost app setting vpnclient server_proto -v "udp"
     yunohost app setting vpnclient service_enabled -v "1"
-    
+
     yunohost app setting vpnclient login_user -v "$vpn_username"
     yunohost app setting vpnclient login_passphrase -v "$vpn_pwd"
-    
+
     yunohost app setting vpnclient ip6_net -v "$ip6_net"
 
     # Add the service to YunoHost's monitored services
     yunohost service add ynh-vpnclient -l /var/log/openvpn-client.log
-    
+
     echo "Restarting OpenVPN..."
     systemctl restart ynh-vpnclient \
       || (echo "Logs:" && cat /var/log/openvpn-client.log && exit 1)
