@@ -153,6 +153,10 @@ create_yunohost_user() {
       -q 0 -p $dummy_pwd
 }
 
+add_labriqueinternet_app_list() {
+    yunohost app fetchlist -n labriqueinternet -u https://labriqueinter.net/apps/labriqueinternet.json
+}
+
 install_vpnclient() {
     echo "Installing the VPN client application..."
 
@@ -318,6 +322,7 @@ upgrade_system
 
 postinstall_yunohost
 create_yunohost_user
+add_labriqueinternet_app_list
 install_vpnclient
 configure_vpnclient
 install_hotspot
