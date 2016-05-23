@@ -256,6 +256,11 @@ configure_hostpot() {
     systemctl restart ynh-hotspot
 }
 
+install_doctorcube() {
+    echo "Installing doctorcube (this shouldn't do anything)..."
+
+    yunohost app install doctorcube
+}
 
 # ----------------------------------
 # Optional steps
@@ -329,6 +334,7 @@ install_vpnclient
 configure_vpnclient
 install_hotspot
 configure_hostpot
+install_doctorcube
 
 remove_dyndns_cron
 restart_api
