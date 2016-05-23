@@ -154,6 +154,8 @@ create_yunohost_user() {
 }
 
 add_labriqueinternet_app_list() {
+    echo "Adding labriqueinternet official app list for updates in the future..."
+
     yunohost app fetchlist -n labriqueinternet -u https://labriqueinter.net/apps/labriqueinternet.json
 }
 
