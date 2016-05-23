@@ -32,25 +32,25 @@ get_variables() {
 
     if [ -f neutrinet.variables ]; then
         source neutrinet.variables
-    echo "********************************************************************************"
-    echo The following settings will apply
-    echo ""
-    echo domain = $domain
-    echo username = $username
-    echo firstname = $firstname
-    echo lastgname = $lastname
-    echo email = $email
-    echo vpn_username = $vpn_username
-    echo "vpn_pwd = **********"
-    echo ip6_net = $ip6_net
-    echo wifi_ssid = $wifi_ssid
-    echo vpn_ca_crt = ${vpn_ca_crt:0:46}...
-    echo vpn_client_key = ${vpn_client_key:0:46}...
-    echo vpn_client_crt = ${vpn_client_crt:0:46}...
-    echo ""
-    echo "********************************************************************************"
-    echo Press any key to continue or CTRL-C to abort
-    read
+        echo "********************************************************************************"
+        echo The following settings will apply
+        echo ""
+        echo domain = $domain
+        echo username = $username
+        echo firstname = $firstname
+        echo lastgname = $lastname
+        echo email = $email
+        echo vpn_username = $vpn_username
+        echo "vpn_pwd = **********"
+        echo ip6_net = $ip6_net
+        echo wifi_ssid = $wifi_ssid
+        echo vpn_ca_crt = ${vpn_ca_crt:0:46}...
+        echo vpn_client_key = ${vpn_client_key:0:46}...
+        echo vpn_client_crt = ${vpn_client_crt:0:46}...
+        echo ""
+        echo "********************************************************************************"
+        echo Press any key to continue or CTRL-C to abort
+        read
     else
         echo
         echo "Main domain name (will be used to host your email and services)"
