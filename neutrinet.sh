@@ -133,9 +133,7 @@ upgrade_system() {
 
     apt-get update -qq
 
-    # untile this 4.5 kernel thing is fixed
-    # apt-get dist-upgrade -y
-    apt-get install yunohost yunohost-admin moulinette nslcd -y
+    apt-get dist-upgrade -y
 }
 
 postinstall_yunohost() {
