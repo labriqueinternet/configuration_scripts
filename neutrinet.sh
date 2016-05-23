@@ -161,8 +161,8 @@ install_vpnclient() {
     echo "Installing the VPN client application..."
 
     set -x
-    yunohost app install https://github.com/labriqueinternet/vpnclient_ynh \
-      --args "domain=$domain&path=/vpnadmin&server_name=vpn.neutrinet.be"
+    yunohost app install vpnclient \
+        --args "domain=$domain&path=/vpnadmin&server_name=vpn.neutrinet.be"
 }
 
 
@@ -227,7 +227,7 @@ install_hotspot() {
     echo "Installing the Hotspot application..."
 
     set -x
-    yunohost app install https://github.com/labriqueinternet/hotspot_ynh \
+    yunohost app install hotspot \
       --args "domain=$domain&path=/wifiadmin&wifi_ssid=$wifi_ssid&wifi_passphrase=$dummy_pwd&firmware_nonfree=yes"
 }
 
