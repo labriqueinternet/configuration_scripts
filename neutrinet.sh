@@ -174,10 +174,58 @@ configure_vpnclient() {
     yunohost app addaccess vpnclient -u $username
 
     # Neutrinet related: add some VPN configuration directives
-    cat >> /etc/openvpn/client.conf.tpl <<EOF
+    cat > /etc/openvpn/client.conf.tpl <<EOF
+# [WARN] Edit this raw configuration ONLY IF YOU KNOW
+#        what you do!
+# [WARN] Continue to use the placeholders <TPL:*> and
+#        keep update their value on the web admin (they
+#        are not only used for this file).
 
+client
+
+remote <TPL:SERVER_NAME>
+proto <TPL:PROTO>
+port <TPL:SERVER_PORT>
+
+pull
+nobind
+dev tun
+tun-ipv6
+# keepalive 10 30
+# neutrinet
+keepalive 10 120
+comp-lzo adaptive
 resolv-retry infinite
+
+# Authentication by login
+<TPL:LOGIN_COMMENT>auth-user-pass /etc/openvpn/keys/credentials
+
+# UDP only
+<TPL:UDP_COMMENT>explicit-exit-notify
+
+# TLS
+tls-client
+remote-cert-tls server
 ns-cert-type server
+ca /etc/openvpn/keys/ca-server.crt
+<TPL:CERT_COMMENT>cert /etc/openvpn/keys/user.crt
+<TPL:CERT_COMMENT>key /etc/openvpn/keys/user.key
+
+# Logs
+verb 3
+mute 5
+status /var/log/openvpn-client.status
+log-append /var/log/openvpn-client.log
+
+# Routing
+route-ipv6 2000::/3
+redirect-gateway def1 bypass-dhcp
+
+
+# neutrinet
+cipher AES-256-CBC
+tls-version-min 1.2
+auth SHA256
 topology subnet
 EOF
 
@@ -204,7 +252,7 @@ EOF
 
     # Configure VPN client
     yunohost app setting vpnclient server_name -v "vpn.neutrinet.be"
-    yunohost app setting vpnclient server_port -v "1194"
+    yunohost app setting vpnclient server_port -v "1195"
     yunohost app setting vpnclient server_proto -v "udp"
     yunohost app setting vpnclient service_enabled -v "1"
 
