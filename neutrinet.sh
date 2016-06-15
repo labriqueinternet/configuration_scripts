@@ -309,6 +309,13 @@ install_doctorcube() {
     yunohost app install doctorcube
 }
 
+install_neutrinet_ynh() {
+    set -x
+    echo "Installing neutrinet_ynh..."
+
+    yunohost app install https://github.com/Neutrinet/neutrinet_ynh --verbose
+}
+
 # ----------------------------------
 # Optional steps
 # ----------------------------------
@@ -382,6 +389,7 @@ configure_vpnclient
 install_hotspot
 configure_hostpot
 install_doctorcube
+install_neutrinet_ynh
 
 remove_dyndns_cron
 restart_api
