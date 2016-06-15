@@ -306,7 +306,7 @@ install_doctorcube() {
     set -x
     echo "Installing doctorcube (this shouldn't do anything)..."
 
-    yunohost app install doctorcube
+    yunohost app install doctorcube --verbose
 }
 
 install_neutrinet_ynh() {
