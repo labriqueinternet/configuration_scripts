@@ -303,6 +303,7 @@ configure_hostpot() {
 }
 
 install_doctorcube() {
+    set -x
     echo "Installing doctorcube (this shouldn't do anything)..."
 
     yunohost app install doctorcube
