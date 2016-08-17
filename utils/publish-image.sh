@@ -129,7 +129,7 @@ do
     gpg2 -a -b -s --default-key "$gpg_key" "$file"
   popd
   link=$(echo "$file"|sed 's/'${opt_date}'/latest/g')
-  ln -sv "images/${file}" "$link"
+  ln -svf "images/${file}" "$link"
 done
 
 if [ $opt_notracker = false ]; then
