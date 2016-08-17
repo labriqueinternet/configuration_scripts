@@ -130,6 +130,8 @@ do
   popd
   link=$(echo "$file"|sed 's/'${opt_date}'/latest/g')
   ln -svf "images/${file}" "$link"
+  ln -svf "images/${file}.asc" "${link}.asc"
+  ln -svf "images/${file}.torrent" "${link}.torrent"
 done
 
 if [ $opt_notracker = false ]; then
