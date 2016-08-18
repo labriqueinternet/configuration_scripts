@@ -149,7 +149,7 @@ configure_vpnclient() {
 
     # Restrict user access to the app
     yunohost app addaccess vpnclient -u $username
-    
+
     # Copy certificates and keys
     mkdir -p /etc/openvpn/keys
     echo '-----BEGIN CERTIFICATE-----'             > /etc/openvpn/keys/user.crt
@@ -173,13 +173,13 @@ configure_vpnclient() {
     yunohost app setting vpnclient server_port -v "1194"
     yunohost app setting vpnclient server_proto -v "udp"
     yunohost app setting vpnclient service_enabled -v "1"
-    
+
     yunohost app setting vpnclient ip6_net -v "$ip6_net"
     yunohost app setting vpnclient ip6_addr -v "${ip6_net}42"
 
     # Add the service to YunoHost's monitored services
     yunohost service add ynh-vpnclient -l /var/log/openvpn-client.log
-    
+
     echo "Restarting OpenVPN..."
     systemctl restart ynh-vpnclient \
       || (echo "Logs:" && cat /var/log/openvpn-client.log && exit 1)
@@ -244,7 +244,7 @@ remove_dyndns_cron() {
 add_vpn_restart_cron() {
     echo "Adding a cronjob to ensure the VPN functioning..."
 
-    echo "* * * * * root /sbin/ifconfig tun0 > /dev/null 2>&1 || systemctl restart ynh-vpnclient" > /etc/cron.d/restart-vpn
+    echo "* * * * * root /bin/ip a s tun0 > /dev/null 2>&1 || systemctl restart ynh-vpnclient" > /etc/cron.d/restart-vpn
 }
 
 configure_DKIM() {
@@ -259,8 +259,8 @@ configure_DKIM() {
 }
 
 display_win_message() {
-    ip6=$(ifconfig | grep -C4 tun0 | awk '/inet6 addr/{print $3}' | sed 's/\/64//' || echo 'ERROR')
-    ip4=$(ifconfig | grep -C4 tun0 | awk '/inet addr/{print substr($2,6)}' || echo 'ERROR')
+    ip6=$(ip -6 addr show tun0 | awk -F'[/ ]' '/inet/{print $6}' || echo 'ERROR')
+    ip4=$(ip -4 addr show tun0 | awk -F'[/ ]' '/inet/{print $6}' || echo 'ERROR')
 
     cat <<EOF
 

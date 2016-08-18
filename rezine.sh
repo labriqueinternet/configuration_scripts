@@ -23,10 +23,10 @@ utilisée par les abeilles comme mortier et anti-infectieux pour assainir la ruc
 
   * Tous les mots de passe seront : ${RED}\e[4m${dummy_pwd}${NC}\e[24m (à changer après l'execution de ce script)
 
-  * Ce script a besoin d'être executé en temps que root ${RED}\e[4mSUR${NC}\e[24m la brique à partir d'une image 
+  * Ce script a besoin d'être executé en temps que root ${RED}\e[4mSUR${NC}\e[24m la brique à partir d'une image
     labriqueinternet_04-06-2015_jessie.img installée sur la carte SD
-     
-  * Si vous rencontrez des problèmes, référez-vous à la documentation originale : 
+
+  * Si vous rencontrez des problèmes, référez-vous à la documentation originale :
                         https://yunohost.org/installation_brique_fr${LGREEN}
   _____________________________________________________________________________________________
 \n\n${LBLUE}"
@@ -131,7 +131,7 @@ get_variables() {
               read install_pirate
 	      echo
 	   fi
-	   if [ "${install_pirate}" = "oui" ]; then            
+	   if [ "${install_pirate}" = "oui" ]; then
               echo -e "${RED}[Optionnel] ${LGREEN}Nom du SSID de votre hotspot pour la PirateBox\n${GRAY}Defaut: ShareBox${NC}"
               read pirate_ssid
                  if [ -z "${pirate_ssid}" ]; then
@@ -139,7 +139,7 @@ get_variables() {
                  fi
               echo
 	      echo -e "${RED}[Optionnel] ${LGREEN}Choisir un nom pour la PirateBox\n${GRAY}Defaut: PirateBox${NC}"
-	      read pirate_name 
+	      read pirate_name
                  if [ -z "${pirate_name}" ]; then
                      pirate_name="PirateBox"
                  fi
@@ -253,7 +253,7 @@ create_yunohost_user() {
     echo -e " =========================================== "
     echo -e " Création du premier utilisateur YunoHost..."
     echo -e " =========================================== ${NC}\n"
-    
+
     if [ -n "$(yunohost user list | grep username)" ]; then
         echo -e "${LGREEN}"
         echo -e " ## Il y a déjà un utilisateur principal, passage à la suite... ##\n"
@@ -289,7 +289,7 @@ configure_vpnclient() {
 
     # Restrict user access to the app
     yunohost app addaccess vpnclient -u $username
-    
+
     # Rézine related: add some VPN configuration directives
     wget http://www.rezine.org/files/config-VPN-propolis.txt -q -O - > /etc/openvpn/client.conf.tpl
 
@@ -310,13 +310,13 @@ configure_vpnclient() {
     yunohost app setting vpnclient server_port -v "1194"
     yunohost app setting vpnclient server_proto -v "udp"
     yunohost app setting vpnclient service_enabled -v "1"
-    
+
     yunohost app setting vpnclient login_user -v "$vpn_username"
     yunohost app setting vpnclient login_passphrase -v "$vpn_pwd"
-    
+
     # Add the service to YunoHost's monitored services
     yunohost service add ynh-vpnclient -l /var/log/openvpn-client.log
-    
+
     echo -e "${LGREEN}"
     echo -e " ===================== "
     echo -e " Restarting OpenVPN..."
@@ -509,7 +509,7 @@ fix_yunohost_services() {
     || echo "nslcd already listed in services"
     yunohost service add spamassassin -l /var/log/mail.log \
     || echo "spamassassin already listed in services"
-   
+
     yunohost service remove bind9 || echo "Bind9 already removed"
 
     echo -e "${LBLUE}\e[1m   ----> Fait ! \e[21m${NC}"
@@ -537,7 +537,7 @@ add_vpn_restart_cron() {
     echo -e " Ajout d'une tâche cron pour s'assurer que le tunnel chiffré fonctionne..."
     echo -e " ========================================================================= ${NC}\n"
 
-    echo "* * * * * root /sbin/ifconfig tun0 > /dev/null 2>&1 || systemctl restart ynh-vpnclient" > /etc/cron.d/restart-vpn
+    echo "* * * * * root /bin/ip a s tun0 > /dev/null 2>&1 || systemctl restart ynh-vpnclient" > /etc/cron.d/restart-vpn
     echo -e "${LBLUE}\e[1m   ----> Fait ! \e[21m${NC}"
 }
 
@@ -557,9 +557,8 @@ configure_DKIM() {
 }
 
 display_win_message() {
-    ip6=$(ifconfig | grep -C4 tun0 | awk '/inet6 addr/{print $3}' | sed 's/\/64//' || echo 'ERROR')
-#    ip4=$(ifconfig | grep -C4 tun0 | awk '/inet addr/{print substr($2,6)}' || echo 'ERROR')
-    ip4=$(ifconfig tun0 | grep 'inet adr:' | cut -d: -f2 |  awk '{ print $1}' || echo 'ERROR')
+    ip6=$(ip -6 addr show tun0 | awk -F'[/ ]' '/inet/{print $6}' || echo 'ERROR')
+    ip4=$(ip -4 addr show tun0 | awk -F'[/ ]' '/inet/{print $6}' || echo 'ERROR')
 
 wget http://www.rezine.org/files/footer-install-propolis.txt -q -O -
 
@@ -578,7 +577,7 @@ _xmpp-server._tcp 14400 IN SRV 0 5 5269 $domain.
 @ 14400 IN TXT "v=spf1 a mx ip4:$ip4 -all""
 $(cat /etc/opendkim/keys/$domain/mail.txt > /dev/null 2>&1 || echo '')
 echo -e "${LGREEN}__________________________________________________________________________${GRAY}
-(Pour d'avantage d'information sur la configuration des DNS, visitez 
+(Pour d'avantage d'information sur la configuration des DNS, visitez
 cette page : ${LBLUE}http://www.rezine.org/documentation/propolis${GRAY})"
 
     if [ ! -z "$additional_domain" ]; then
@@ -588,7 +587,7 @@ cette page : ${LBLUE}http://www.rezine.org/documentation/propolis${GRAY})"
 echo -e "
 \n${LGREEN}--> Et n'oubliez pas de changer :
 __________________________________________________________________________${NC}
-    
+
   * Le mot de passe d'administration via l'interface Web de la Propolis :
     ${LBLUE}http://${domain}/yunohost/admin/#/tools/adminpw${NC}
 
@@ -597,7 +596,7 @@ __________________________________________________________________________${NC}
 
   * Le(s) mot(s) de passe Wifi (WPA2) via l'interface Web de la Propolis :
     ${LBLUE}http://${domain}/wifiadmin${NC}
-  
+
   * Et si vous ne l'avez pas fait, le mot de passe root avec la commande :
     ${RED}passwd${LGREEN}
 __________________________________________________________________________${NC}"

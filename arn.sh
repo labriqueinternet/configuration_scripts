@@ -121,7 +121,7 @@ install_free_dongle_drivers() {
     if [ "$nonfree_dongle" = "no" ]; then
         wget -O /lib/firmware/htc_7010.fw "https://github.com/labriqueinternet/hotspot_ynh/raw/master/conf/firmware_htc-7010.fw"
         wget -O /lib/firmware/htc_9271.fw "https://github.com/labriqueinternet/hotspot_ynh/raw/master/conf/firmware_htc-9271.fw"
-    
+
         echo -e "\n${LGREEN}Les drivers libres du dongle WiFi ont été installés, veuillez débrancher puis rebrancher le dongle WiFi de votre Brique.${BLUE}"
         read -rsp $'Pressez n\'importe quelle touche une fois le dongle rebranché...\n' -n1 yolo
         echo -e "${NC}\n"
@@ -310,11 +310,8 @@ remove_dyndns_cron() {
 
 
 display_win_message() {
-    ip6=$(ifconfig tun0 | awk '/adr inet6/{print $3}' | sed 's/\/64//' || echo 'ERROR')
-    if [ -z "$ip6" ]; then
-        ip6=$(ifconfig tun0 | awk '/inet6 adr/{print $3}' | sed 's/\/64//' || echo 'ERROR')
-    fi
-    ip4=$(ifconfig tun0 | awk '/inet adr/{print substr($2,5)}' || echo 'ERROR')
+    ip6=$(ip -6 addr show tun0 | awk -F'[/ ]' '/inet/{print $6}' || echo 'ERROR')
+    ip4=$(ip -4 addr show tun0 | awk -F'[/ ]' '/inet/{print $6}' || echo 'ERROR')
 
     echo -e "\nVotre $cubename a été correctement configurée."
 
