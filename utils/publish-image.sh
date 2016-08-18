@@ -137,3 +137,5 @@ done
 if [ $opt_notracker = false ]; then
   ssh "$target_host" 'sudo systemctl restart bttrack.service'
 fi
+
+echo 'Please update also https://repo.labriqueinter.net/MD5SUMS (if install-sd.sh has changed)'
