@@ -313,7 +313,7 @@ install_neutrinet_ynh() {
     set -x
     echo "Installing neutrinet_ynh..."
 
-    yunohost app install https://github.com/Neutrinet/neutrinet_ynh --verbose
+    yunohost app install https://github.com/Neutrinet/neutrinet_ynh --verbose --args "domain=$domain&path=/neutrinet"
 }
 
 # ----------------------------------
