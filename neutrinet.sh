@@ -384,12 +384,12 @@ upgrade_system
 postinstall_yunohost
 create_yunohost_user
 add_labriqueinternet_app_list
-install_neutrinet_ynh
 install_vpnclient
 configure_vpnclient
 install_hotspot
 configure_hostpot
 install_doctorcube
+install_neutrinet_ynh
 
 remove_dyndns_cron
 restart_api
