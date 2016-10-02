@@ -275,7 +275,7 @@ install_hotspot() {
     echo "Installing the Hotspot application..."
 
     set -x
-    yunohost app install hotspot \
+    yunohost app install hotspot --verbose \
       --args "domain=$domain&path=/wifiadmin&wifi_ssid=$wifi_ssid&wifi_passphrase=$dummy_pwd&firmware_nonfree=yes"
 }
 
