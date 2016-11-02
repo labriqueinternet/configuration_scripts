@@ -123,6 +123,7 @@ modify_hosts() {
 
 set_locales() {
     [ "$(grep LC_ALL /etc/environment)" ] || echo 'LC_ALL="fr_FR.UTF-8"' >> /etc/environment
+    source /etc/environment
 }
 
 upgrade_system() {
