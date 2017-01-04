@@ -19,14 +19,14 @@
 
 # Run this script on your laptop!
 # Please read the documentation before :) https://wiki.labriqueinter.net/doku.php/infra:torrent
-#   % sshfs mirabelle.ldn:/var/www/repo-labriqueinternet /media/pub
+#   % sshfs leela.ldn-fai.net:/var/www/repo.labriqueinter.net /media/pub
 
 opt_debug=false
 opt_notracker=false
 opt_date=
 local_dir='/media/pub'
 gpg_key='0xCD8F4D648AC0ECC1'
-target_host='ginkgo.ldn'
+target_host='bender.ldn-fai.net'
 
 function show_usage() {
   echo -e "\e[1mOPTIONS\e[0m" >&2
@@ -121,7 +121,7 @@ do
   pushd images/
     echo "run on ${file}"
     md5sum "$file" >> MD5SUMS
-    btmakemetafile http://ldn-fai.net:6969/announce "$file" --announce_list 'http://ldn-fai.net:6969/announce|udp://tracker.torrent.eu.org:451' --comment 'La Brique Internet : https://labriqueinter.net/' --httpseeds 'http://repo.labriqueinter.net'
+    btmakemetafile http://tracker.ldn-fai.net:6969/announce "$file" --announce_list 'http://tracker.ldn-fai.net:6969/announce|udp://tracker.torrent.eu.org:451' --comment 'La Brique Internet : https://labriqueinter.net/' --httpseeds 'http://repo.labriqueinter.net'
     md5sum "${file}.torrent" >> MD5SUMS
     if [ $opt_notracker = false ]; then
       scp "${file}.torrent" "$target_host":/torrent/btfiles/
