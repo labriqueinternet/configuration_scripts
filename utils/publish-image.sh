@@ -124,7 +124,8 @@ do
     btmakemetafile http://tracker.ldn-fai.net:6969/announce "$file" --announce_list 'http://tracker.ldn-fai.net:6969/announce|udp://tracker.torrent.eu.org:451' --comment 'La Brique Internet : https://labriqueinter.net/' --httpseeds 'http://repo.labriqueinter.net'
     md5sum "${file}.torrent" >> MD5SUMS
     if [ $opt_notracker = false ]; then
-      scp "${file}.torrent" "$target_host":/torrent/btfiles/
+      scp "${file}.torrent" "$target_host":/var/lib/bttrack/
+      ssh "$target_host" "chown -R bttrack: /var/lib/bttrack"
     fi
     gpg2 -a -b -s --default-key "$gpg_key" "$file"
   popd
