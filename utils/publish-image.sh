@@ -125,7 +125,7 @@ do
     md5sum "${file}.torrent" >> MD5SUMS
     if [ $opt_notracker = false ]; then
       scp "${file}.torrent" "$target_host":/var/lib/bttrack/
-      ssh "$target_host" "chown -R bttrack: /var/lib/bttrack"
+      ssh "$target_host" "sudo chown -R bttrack: /var/lib/bttrack"
     fi
     gpg2 -a -b -s --default-key "$gpg_key" "$file"
   popd
