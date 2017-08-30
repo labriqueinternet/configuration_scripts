@@ -19,6 +19,8 @@
 
 # Run this script on your laptop!
 # Please read the documentation before :) https://wiki.labriqueinter.net/doku.php/infra:torrent
+
+#   % apt install bittornado
 #   % sshfs leela.ldn-fai.net:/var/www/repo.labriqueinter.net /media/pub
 
 opt_debug=false
