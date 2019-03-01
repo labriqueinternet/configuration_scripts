@@ -21,23 +21,19 @@
 # Please read the documentation before :) https://wiki.labriqueinter.net/doku.php/infra:torrent
 
 #   % apt install bittornado
-#   % sshfs leela.ldn-fai.net:/var/www/repo.labriqueinter.net /media/pub
+#   % sshfs brique.ldn-fai.net:/var/www/repo.labriqueinter.net /media/pub
 
 opt_debug=false
 opt_notracker=false
 opt_date=
 local_dir='/media/pub'
 gpg_key='0xCD8F4D648AC0ECC1'
-target_host='bender.ldn-fai.net'
 
 function show_usage() {
   echo -e "\e[1mOPTIONS\e[0m" >&2
   echo -e "  \e[1m-i\e[0m \e[4mdate\e[0m" >&2
   echo -e "     LaBriqueInterNet Image date yyyy-mm-dd format (2016-08-16)" >&2
   echo -e "     \e[2mDefault: No default\e[0m" >&2
-  echo -e "  \e[1m-t\e[0m" >&2
-  echo -e "     Do not install torrrents (on LDN tracker)" >&2
-  echo -e "     \e[2mDefault: Enabled\e[0m" >&2
   echo -e "  \e[1m-d\e[0m" >&2
   echo -e "     Enable debug messages" >&2
   echo -e "  \e[1m-h\e[0m" >&2
@@ -104,7 +100,6 @@ check_bins
 
 while getopts "i:tdh" opt; do
   case $opt in
-    t) opt_notracker=true ;;
     i) opt_date=$OPTARG ;;
     d) opt_debug=true ;;
     h) exit_usage ;;
@@ -123,22 +118,14 @@ do
   pushd images/
     echo "run on ${file}"
     md5sum "$file" >> MD5SUMS
-    btmakemetafile http://tracker.ldn-fai.net:6969/announce "$file" --announce_list 'http://tracker.ldn-fai.net:6969/announce|udp://tracker.torrent.eu.org:451' --comment 'La Brique Internet : https://labriqueinter.net/' --httpseeds 'http://repo.labriqueinter.net'
+    btmakemetafile udp://tracker.torrent.eu.org:451 "$file" --announce_list 'udp://tracker.torrent.eu.org:451' --comment 'La Brique Internet : https://labriqueinter.net/' --httpseeds 'http://repo.labriqueinter.net'
     md5sum "${file}.torrent" >> MD5SUMS
-    if [ $opt_notracker = false ]; then
-      scp "${file}.torrent" "$target_host":/var/lib/bttrack/
-      ssh "$target_host" "sudo chown -R bttrack: /var/lib/bttrack"
-    fi
-    gpg2 -a -b -s --default-key "$gpg_key" "$file"
+    gpg -a -b -s --default-key "$gpg_key" "$file"
   popd
   link=$(echo "$file"|sed 's/'${opt_date}'/latest/g')
   ln -svf "images/${file}" "$link"
   ln -svf "images/${file}.asc" "${link}.asc"
   ln -svf "images/${file}.torrent" "${link}.torrent"
 done
-
-if [ $opt_notracker = false ]; then
-  ssh "$target_host" 'sudo systemctl restart bttrack.service'
-fi
 
 echo 'Please update also https://repo.labriqueinter.net/MD5SUMS (if install-sd.sh has changed)'
